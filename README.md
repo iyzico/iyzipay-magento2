@@ -27,7 +27,7 @@
 * bin/magento module:status
 * Enjoy :)
 
-* <a href="https://dev-beta.iyzipay.com/tr/3-secenek/teknik-bilgi-gerekli">Detailed Info</a>
+<a href="https://dev-beta.iyzipay.com/tr/3-secenek/teknik-bilgi-gerekli">Detailed Info</a>
 
 # Support
 ---------------
