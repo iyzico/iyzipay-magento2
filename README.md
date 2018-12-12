@@ -3,13 +3,11 @@
 * Create live account at https://merchant.iyzipay.com
 * Create test account at https://sandbox-iyzipay.com
 
-
 # Requirements
 ------------
 * PHP 7.0.x and greater.
 * cURL
 * [Magento2 version 2.2+](https://devdocs.magento.com/guides/v2.2/install-gde/system-requirements-tech.html)
-
 
 # Collaboration
 ------------
@@ -17,9 +15,8 @@
 
 # Installation
 ---------------
-
-* Repository clone or download
-* app folder in create code - Iyzico - Iyzipay
+* Copy or download the repository
+* Create the iyzico folder in the app folder. In the Iyzico folder, create the Iyzipay folder. (app -> Iyzico -> Iyzipay)
 * Send the repository files into the Iyzipay folder
 * bin/magento module:enable Iyzico_Iyzipay --clear-static-content
 * bin/magento setup:upgrade
@@ -39,7 +36,6 @@
 * Guest Checkout Payment Support
 * iyzico Protected Script Support
 * Live / Sandbox Support
-
 
 # Notes
 ---------------
