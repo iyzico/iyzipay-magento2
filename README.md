@@ -1,2 +1,48 @@
-# iyzipay-magento2
-iyzico magento gateway
+# iyzico - Magento 2 Payment Gateway
+------------
+* Create live account at https://merchant.iyzipay.com
+* Create test account at https://sandbox-iyzipay.com
+
+
+# Requirements
+------------
+PHP 7.0.x and greater.
+cURL
+[Magento2 version 2.2+](https://devdocs.magento.com/guides/v2.2/install-gde/system-requirements-tech.html)
+
+
+# Collaboration
+------------
+We commit all our new features directly into our GitHub repository. But you can also request or suggest new features or code changes yourself!
+
+# Installation
+---------------
+
+* Repository clone or download
+* app folder in create code - Iyzico - Iyzipay
+* Send the repository files into the Iyzipay folder
+* bin/magento module:enable Iyzico_Iyzipay --clear-static-content
+* bin/magento setup:upgrade
+* bin/magento setup:di:compile
+* bin/magento module:status
+* Enjoy :)
+
+* <a href="https://dev-beta.iyzipay.com/tr/3-secenek/teknik-bilgi-gerekli">Detailed Info</a>
+
+# Support
+---------------
+You can create issues on our Magento Repository. In case of specific problems with your account, please contact support@iyzico.com.
+
+# Additional Features
+---------------------
+* Installment management support
+* Guest Checkout support
+* iyzico protected script support
+
+# Notes
+---------------
+* Developed and Tested on vanilla Magento2 2.2+ Installation
+
+# License
+---------------
+MIT license. For more information, see the LICENSE file.
