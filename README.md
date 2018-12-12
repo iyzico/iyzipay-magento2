@@ -35,9 +35,11 @@
 
 # Additional Features
 ---------------------
-* Installment management support
-* Guest Checkout support
-* iyzico protected script support
+* Installment Management Support
+* Guest Checkout Payment Support
+* iyzico Protected Script Support
+* Live / Sandbox Support
+
 
 # Notes
 ---------------
