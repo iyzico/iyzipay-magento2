@@ -6,14 +6,14 @@
 
 # Requirements
 ------------
-PHP 7.0.x and greater.
-cURL
-[Magento2 version 2.2+](https://devdocs.magento.com/guides/v2.2/install-gde/system-requirements-tech.html)
+* PHP 7.0.x and greater.
+* cURL
+* [Magento2 version 2.2+](https://devdocs.magento.com/guides/v2.2/install-gde/system-requirements-tech.html)
 
 
 # Collaboration
 ------------
-We commit all our new features directly into our GitHub repository. But you can also request or suggest new features or code changes yourself!
+* We commit all our new features directly into our GitHub repository. But you can also request or suggest new features or code changes yourself!
 
 # Installation
 ---------------
@@ -31,7 +31,7 @@ We commit all our new features directly into our GitHub repository. But you can 
 
 # Support
 ---------------
-You can create issues on our Magento Repository. In case of specific problems with your account, please contact support@iyzico.com.
+* You can create issues on our Magento Repository. In case of specific problems with your account, please contact support@iyzico.com.
 
 # Additional Features
 ---------------------
@@ -45,4 +45,4 @@ You can create issues on our Magento Repository. In case of specific problems wi
 
 # License
 ---------------
-MIT license. For more information, see the LICENSE file.
+* MIT license. For more information, see the LICENSE file.
