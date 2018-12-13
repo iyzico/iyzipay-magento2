@@ -33,7 +33,7 @@ class IyzicoFormObjectGenerator
 	 	$this->helper = new IyzicoHelper();
 	 }
 
-	public function generateOption($checkoutSession,$cardUserKey,$locale,$currency,$cardId,$callBack) {
+	public function generateOption($checkoutSession,$cardUserKey,$locale,$currency,$cardId,$callBack,$magentoVersion) {
 
 		$iyzico = new stdClass();
 		$helper = new IyzicoHelper();
@@ -48,8 +48,8 @@ class IyzicoFormObjectGenerator
 		$iyzico->forceThreeDS                 = "0";
 		$iyzico->callbackUrl                  = $callBack."Iyzico_Iyzipay/response/iyzicocheckoutform";
 		$iyzico->cardUserKey                  = $cardUserKey;
-		$iyzico->paymentSource                = "MAGENTO";
-
+		$iyzico->paymentSource                = "MAGENTO2|".$magentoVersion."|SPACE-1.0";
+		
 		return $iyzico;
 
 	}

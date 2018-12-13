@@ -79,6 +79,12 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action
         $callBack = $this->_storeManager->getStore()->getBaseUrl();
         $cardId = $checkoutSession->getId();
 
+        /* Get Version */
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); 
+        $productMetadata = $objectManager->get('Magento\Framework\App\ProductMetadataInterface'); 
+        $magentoVersion = $productMetadata->getVersion();
+
+
         $rand = uniqid();
         $customerId = 0;
 
@@ -121,7 +127,7 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action
             $guestEmail = $postData['iyziQuoteEmail'];
         }
 
-        $iyzico = $iyzicoFormObject->generateOption($checkoutSession,$customerCardUserKey,$locale,$currency,$cardId,$callBack);
+        $iyzico = $iyzicoFormObject->generateOption($checkoutSession,$customerCardUserKey,$locale,$currency,$cardId,$callBack,$magentoVersion);
         $iyzico->buyer = $iyzicoFormObject->generateBuyer($checkoutSession,$guestEmail);
         $iyzico->billingAddress = $iyzicoFormObject->generateBillingAddress($checkoutSession);
         $iyzico->shippingAddress = $iyzicoFormObject->generateShippingAddress($checkoutSession);
