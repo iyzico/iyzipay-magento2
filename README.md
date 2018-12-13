@@ -15,6 +15,7 @@
 
 # Installation
 ---------------
+```php
 * Copy or download the repository
 * Create the iyzico folder in the app folder. In the Iyzico folder, create the Iyzipay folder. (app -> Iyzico -> Iyzipay)
 * Send the repository files into the Iyzipay folder
@@ -23,6 +24,7 @@
 * bin/magento setup:di:compile
 * bin/magento module:status
 * Enjoy :)
+```
 
 <a href="https://dev-beta.iyzipay.com/tr/3-secenek/teknik-bilgi-gerekli">Detailed Info</a>
 
