@@ -17,7 +17,7 @@
 ---------------
 ```php
 * Copy or download the repository
-* Create the iyzico folder in the app folder. In the Iyzico folder, create the Iyzipay folder. (app -> Iyzico -> Iyzipay)
+* Create the iyzico folder in the app/code folder. In the Iyzico folder, create the Iyzipay folder. (app -> code ->Iyzico -> Iyzipay)
 * Send the repository files into the Iyzipay folder
 * bin/magento module:enable Iyzico_Iyzipay --clear-static-content
 * bin/magento setup:upgrade
