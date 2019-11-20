@@ -106,8 +106,6 @@ class DataAssignObserver implements \Magento\Framework\Event\ObserverInterface {
                     $order->setSubTotalInclTax($iyzicoSubTotal);
                     $order->setGrandTotal($iyzicoGrandTotal);
                     $order->setBaseGrandTotal($iyzicoGrandTotal);
-                    $order->setState('processing');
-                    $order->setStatus('processing');
 
                     $payment = $order->getPayment();
                     $payment->setAmountOrdered($iyzicoGrandTotal);
@@ -122,6 +120,9 @@ class DataAssignObserver implements \Magento\Framework\Event\ObserverInterface {
 
                 }
 
+                $order->setState('processing');
+                $order->setStatus('processing');
+                
                 $historyComment = __('Payment Success').$paymentId;
                 $order->addStatusHistoryComment($historyComment);
             }
