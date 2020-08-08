@@ -27,8 +27,12 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Iyzico\Iyzipay\Controller\IyzicoBase\IyzicoPkiStringBuilder;
 use Iyzico\Iyzipay\Controller\IyzicoBase\IyzicoRequest;
 use stdClass;
+use Magento\Framework\App\CsrfAwareActionInterface;
+use Magento\Framework\App\Request\InvalidRequestException;
+use Magento\Framework\App\RequestInterface;
 
-class IyzipayConfigSaveBefore implements ObserverInterface
+
+class IyzipayConfigSaveBefore implements ObserverInterface, CsrfAwareActionInterface
 {
     
     protected $_scopeConfig;
@@ -50,6 +54,26 @@ class IyzipayConfigSaveBefore implements ObserverInterface
         $this->_configWriter = $configWriter;
         $this->_request = $request;
     }
+
+
+    /**
+     * @inheritDoc
+     */
+    public function createCsrfValidationException(
+        RequestInterface $request
+    ): ?InvalidRequestException {
+        return null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function validateForCsrf(RequestInterface $request): ?bool
+    {
+        return true;
+    }
+
+
 
     public function execute(EventObserver $observer)
     {

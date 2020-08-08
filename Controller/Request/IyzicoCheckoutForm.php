@@ -25,9 +25,11 @@ use Iyzico\Iyzipay\Controller\IyzicoBase\IyzicoFormObjectGenerator;
 use Iyzico\Iyzipay\Controller\IyzicoBase\IyzicoPkiStringBuilder;
 use Iyzico\Iyzipay\Controller\IyzicoBase\IyzicoRequest;
 use Magento\Customer\Api\Data\GroupInterface;
+use Magento\Framework\App\CsrfAwareActionInterface;
+use Magento\Framework\App\Request\InvalidRequestException;
+use Magento\Framework\App\RequestInterface;
 
-
-class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action 
+class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface
 {
 	
     protected $_context;
@@ -59,7 +61,25 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action
         $this->_iyziCardFactory = $iyziCardFactory;
         $this->_storeManager = $storeManager;
     }
-    
+
+
+    /**
+     * @inheritDoc
+     */
+    public function createCsrfValidationException(
+        RequestInterface $request
+    ): ?InvalidRequestException {
+        return null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function validateForCsrf(RequestInterface $request): ?bool
+    {
+        return true;
+    }
+
 	/**
 	 * Takes the place of the M1 indexAction. 
 	 * Now, every IyziPayGeneratorCheckout has an execute
