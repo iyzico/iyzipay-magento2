@@ -27,8 +27,12 @@ use Iyzico\Iyzipay\Controller\IyzicoBase\IyzicoPkiStringBuilder;
 use Iyzico\Iyzipay\Controller\IyzicoBase\IyzicoRequest;
 use Magento\Checkout\Model\Type\Onepage;
 use Magento\Framework\Controller\ResultFactory;
+use Magento\Framework\App\CsrfAwareActionInterface;
+use Magento\Framework\App\Request\InvalidRequestException;
+use Magento\Framework\App\RequestInterface;
 
-class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action 
+
+class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface
 {
     
     protected $_context;
@@ -88,6 +92,24 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action
         $this->_guestCartManagement = $guestCartManagement;
         $this->_storeManager = $storeManager;
         $this->_helper = $helper;
+    }
+
+
+    /**
+     * @inheritDoc
+     */
+    public function createCsrfValidationException(
+        RequestInterface $request
+    ): ?InvalidRequestException {
+        return null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function validateForCsrf(RequestInterface $request): ?bool
+    {
+        return true;
     }
 
     public function execute()
