@@ -1,4 +1,4 @@
-# Pay With iyzico - Magento 2 Payment Gateway
+# Pay with iyzico - Magento 2 Payment Gateway
 ------------
 * Create live account at https://merchant.iyzipay.com
 * Create test account at https://sandbox-merchant.iyzipay.com
