@@ -1,0 +1,15 @@
+<script>
+    <?php
+
+    $om = \Magento\Framework\App\ObjectManager::getInstance();
+    /** @var \Magento\Framework\Locale\Resolver $resolver */
+    $resolver = $om->get('Magento\Framework\Locale\Resolver');
+    $locale = $resolver->getLocale();
+
+    if ($locale == 'tr_TR'){ ?>
+        var imgpath = '<?php echo $block->getViewFileUrl('Iyzico_PayWithIyzico::images/paywithiyzico.png') ?>';
+    <?php }
+    else{ ?>
+        var imgpath = '<?php echo $block->getViewFileUrl('Iyzico_PayWithIyzico::images/paywithiyzico_en.png') ?>';
+    <?php } ?>
+</script>

@@ -1,0 +1,98 @@
+<!--
+/**
+ * Copyright © 2013-2017 Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<div class="payment-method" data-bind="css: {'_active': (getCode() == isChecked())}">
+    <div class="payment-method-title field choice">
+        <input type="radio"
+               name="payment[method]"
+               class="radio"
+               data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()"/>
+        <img data-bind="attr: {src: getPayWithIyzicoLogo(), alt: $t('Pay with iyzico')}"
+             class="payment-icon"/>
+        <label><span translate="'Pay with iyzico-It’s Easy Now!'">Pay with iyzico-It’s Easy Now!</span></label>
+    </div>
+    <div id="pwiDescription">
+        <label><span translate="'You can easily pay for your shopping with your iyzico balance, with your stored card or money transfer method; get 24/7 live support with the advantage of iyzico Buyer Protection on any matter.'">You can easily pay for your shopping with your iyzico balance, with your stored card or money transfer method; get 24/7 live support with the advantage of iyzico Buyer Protection on any matter.</span></label>
+    </div>
+    <div class="payment-method-content">
+        <!-- ko foreach: getRegion('messages') -->
+        <!-- ko template: getTemplate() --><!-- /ko -->
+        <!--/ko-->
+        <div class="payment-method-billing-address">
+            <!-- ko foreach: $parent.getRegion(getBillingAddressFormName()) -->
+            <!-- ko template: getTemplate() --><!-- /ko -->
+            <!--/ko-->
+        </div>
+        <!--<p data-bind="html: getInstructions()"></p>!-->
+        <div class="checkout-agreements-block">
+            <!-- ko foreach: $parent.getRegion('before-place-order') -->
+                <!-- ko template: getTemplate() --><!-- /ko -->
+            <!--/ko-->
+        </div>
+<div id="payWithIyzicoPayment" data-payment-element-iyzico="1">
+    <div id="pwiLoadingBar" style="display: none;">
+        <div class="pwiLoading">
+        </div>
+        <div class="pwiBrand">
+            <p style="text-align:center;color:#1E64FF;">iyzico</p>
+        </div>
+    </div>
+</div>
+
+            <div class="actions-toolbar">
+                <div class="primary">
+                <button class="action primary checkout"
+                        type="submit"
+                        data-bind="
+                    click: payWithIyzico,
+                    attr: {title: $t('Pay with iyzico')},
+                    css: {disabled: !isPlaceOrderActionAllowed()}
+                    ">
+                    <span data-bind="i18n: 'Pay with iyzico'"></span>
+                </button>
+            </div>
+            </div>
+    </div>
+</div>
+
+<style>
+
+    #payWithIyzicoPayment{
+        margin-top: 10px;
+    }
+
+    #pwiDescription{
+        padding-top: 10px;
+        padding-bottom: 20px;
+    }
+
+    .payment-icon{
+        width: 12%;
+    }
+
+    .pwiLoading{
+        width:40px;
+        height:40px;
+        background-color:#1E64FF;
+        margin:auto;
+        -webkit-animation:sk-rotateplane 1.2s infinite ease-in-out;
+        animation:sk-rotateplane 1.2s infinite ease-in-out
+    }
+    @-webkit-keyframes sk-rotateplane{
+        0%{-webkit-transform:perspective(120px)}
+        50%{-webkit-transform:perspective(120px) rotateY(180deg)}
+        100%{-webkit-transform:perspective(120px) rotateY(180deg) rotateX(180deg)}
+    }
+    @keyframes sk-rotateplane{
+        0%{transform:perspective(120px) rotateX(0) rotateY(0);
+            -webkit-transform:perspective(120px) rotateX(0) rotateY(0)}
+        50%{transform:perspective(120px) rotateX(-180.1deg) rotateY(0);
+            -webkit-transform:perspective(120px) rotateX(-180.1deg) rotateY(0)}
+        100%{transform:perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+            -webkit-transform:perspective(120px) rotateX(-180deg) rotateY(-179.9deg)}
+    }
+</style>
+
