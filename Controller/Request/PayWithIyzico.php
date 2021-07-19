@@ -51,7 +51,7 @@ class PayWithIyzico extends \Magento\Framework\App\Action\Action
     ) {
         $this->_context = $context;
         $this->_pageFactory = $pageFactory;
-		$this->_jsonEncoder = $encoder;
+        $this->_jsonEncoder = $encoder;
         $this->_checkoutSession = $checkoutSession;
         $this->_customerSession = $customerSession;
         $this->_scopeConfig = $scopeConfig;
@@ -60,11 +60,11 @@ class PayWithIyzico extends \Magento\Framework\App\Action\Action
         $this->_storeManager = $storeManager;
     }
 
-	/**
-	 * Takes the place of the M1 indexAction.
-	 * Now, every IyziPayGeneratorCheckout has an execute
-	 *
-	 ***/
+    /**
+     * Takes the place of the M1 indexAction.
+     * Now, every IyziPayGeneratorCheckout has an execute
+     *
+     ***/
     public function execute()
     {
 
@@ -84,6 +84,7 @@ class PayWithIyzico extends \Magento\Framework\App\Action\Action
         $productMetadata = $objectManager->get('Magento\Framework\App\ProductMetadataInterface');
         $magentoVersion = $productMetadata->getVersion();
 
+        $this->checkAndSetCookieSameSite();
 
         $rand = uniqid();
 
@@ -136,6 +137,39 @@ class PayWithIyzico extends \Magento\Framework\App\Action\Action
         $this->getResponse()->representJson($result);
         return;
 
+    }
+
+    private function setcookieSameSite($name, $value, $expire, $path, $domain, $secure, $httponly) {
+
+        if (PHP_VERSION_ID < 70300) {
+
+            setcookie($name, $value, $expire, "$path; samesite=None", $domain, $secure, $httponly);
+        }
+        else {
+            setcookie($name, $value, [
+                'expires' => $expire,
+                'path' => $path,
+                'domain' => $domain,
+                'samesite' => 'None',
+                'secure' => $secure,
+                'httponly' => $httponly
+            ]);
+
+
+        }
+    }
+
+    private function checkAndSetCookieSameSite(){
+
+        $checkCookieNames = array('PHPSESSID','OCSESSID','default','PrestaShop-','wp_woocommerce_session_');
+
+        foreach ($_COOKIE as $cookieName => $value) {
+            foreach ($checkCookieNames as $checkCookieName){
+                if (stripos($cookieName,$checkCookieName) === 0) {
+                    $this->setcookieSameSite($cookieName,$_COOKIE[$cookieName], time() + 86400, "/", $_SERVER['SERVER_NAME'],true, true);
+                }
+            }
+        }
     }
 
 }

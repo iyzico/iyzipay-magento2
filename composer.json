@@ -1,5 +1,5 @@
 {
-    "name": "iyzico/module-paywithiyzico",
+    "name": "iyzico/paywithiyzico",
     "description": "pay with iyzico Payment Gateway For Magento 2",
     "type": "magento2-module",
     "version": "1.0.0",
