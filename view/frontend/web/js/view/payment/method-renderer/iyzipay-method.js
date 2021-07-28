@@ -2,6 +2,8 @@ define(
     [
         'Magento_Checkout/js/view/payment/default',
         'jquery',
+        'ko',
+        'Magento_Checkout/js/model/payment/additional-validators',
         'mage/url',
         'Magento_Checkout/js/model/full-screen-loader',
         'Magento_Checkout/js/model/quote',
@@ -11,7 +13,7 @@ define(
         'Magento_Checkout/js/model/url-builder',
         'uiComponent'
     ],
-    function (Component, $, urlBuilder, fullscreenLoader, quote, customer, storage, placeOrderService, mageUrlBuilder) {
+    function (Component, $, ko, additionalValidators, urlBuilder, fullscreenLoader, quote, customer, storage, placeOrderService, mageUrlBuilder) {
         'use strict';
         return Component.extend({
             defaults: {
@@ -20,31 +22,32 @@ define(
             getInstructions: function () {
                 return window.checkoutConfig.payment.instructions[this.item.method];
             },
-            getInitIyzicoForm: function () {
+            payWithIyzico: function (){
+                var quoteEmail, guestQuoteId = false;
 
-                var quoteEmail, guestQuoteId, checkoutStatus = false;
+
+                if(!additionalValidators.validate()) {   //Resolve checkout aggreement accept error
+                    return false;
+                }
 
                 $( document ).ready(function() {
 
-                     if(!customer.isLoggedIn()) {
-                        console.log(quote.guestEmail);
-                         quoteEmail = quote.guestEmail;
-                         guestQuoteId = quote.getQuoteId();
+                    $("#loadingBar").show();
+
+                    if(!customer.isLoggedIn()) {
+                        quoteEmail = quote.guestEmail;
+                        guestQuoteId = quote.getQuoteId();
                     }
 
-                    if(checkoutStatus == false) {
-                        $.ajax({
-                            url: urlBuilder.build("Iyzico_Iyzipay/request/iyzicocheckoutform"),
-                            data: {iyziQuoteEmail: quoteEmail, iyziQuoteId: guestQuoteId},
-                            type: "post",
-                            dataType: "html"
-                        }).done(function (data) {
-                            $("#loadingBar").hide();                           
-                            $("#iyzicopaymenForm").append(data);
-                            checkoutStatus = true;
-                        });
+                    $.ajax({
+                        url: urlBuilder.build("Iyzico_Iyzipay/request/iyzicocheckoutform"),
+                        data: {iyziQuoteEmail: quoteEmail, iyziQuoteId: guestQuoteId},
+                        type: "post",
+                        dataType: "html"
+                    }).done(function (data) {
+                        window.location.href = data;
+                    });
 
-                    }
                 });
             }
         });

@@ -33,7 +33,7 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
     protected $_guestCartManagement;
     protected $_storeManager;
     protected $_helper;
-    
+
     public function createCsrfValidationException(RequestInterface $request): ?InvalidRequestException
     {
         return null;
@@ -85,7 +85,7 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
     }
 
     public function execute()
-    {   
+    {
 
         $postData = $this->getRequest()->getPostValue();
         $resultRedirect = $this->_resultRedirect->create(ResultFactory::TYPE_REDIRECT);
@@ -93,9 +93,9 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
 
 
         if(!isset($postData['token'])) {
-            
+
             $errorMessage = __('Token not found');
-            
+
                         /* Redirect Error */
             $this->_messageManager->addError($errorMessage);
             $resultRedirect->setPath('checkout/cart', ['_secure' => true]);
@@ -105,7 +105,7 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
 
 
         if($this->_customerSession->getIyziToken() != $postData['token']) {
-            
+
             $errorMessage = __('Token Not Match');
             $this->_messageManager->addError($errorMessage);
             $resultRedirect->setPath('checkout/cart', ['_secure' => true]);
@@ -113,19 +113,17 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
 
         }
 
-
-
         $token = $postData['token']; /* Add Filterr */
         $customerId = 0;
         $apiKey = $this->_scopeConfig->getValue('payment/iyzipay/api_key');
         $secretKey = $this->_scopeConfig->getValue('payment/iyzipay/secret_key');
-        $sandboxStatus = $this->_scopeConfig->getValue('payment/iyzipay/sandbox'); 
+        $sandboxStatus = $this->_scopeConfig->getValue('payment/iyzipay/sandbox');
         $rand = uniqid();
-        $baseUrl = 'https://api.iyzipay.com'; 
+        $baseUrl = 'https://api.iyzipay.com';
         $currency = $this->_storeManager->getStore()->getCurrentCurrency()->getCode();
         $this->_quote->setIyziCurrency($currency);
 
-        
+
         if($sandboxStatus)
             $baseUrl = 'https://sandbox-api.iyzipay.com';
 
@@ -136,7 +134,7 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
         if($this->_customerSession->isLoggedIn()){
             $customerId = $this->_customerSession->getCustomerId();
         }
-        
+
         $tokenDetailObject        = $iyzicoResponseObject->generateTokenDetailObject('123456789',$token);
         $iyzicoPkiString          = $iyzicoPkiStringBuilder->pkiStringGenerate($tokenDetailObject);
         $authorization            = $iyzicoPkiStringBuilder->authorizationGenerate($iyzicoPkiString,$apiKey,$secretKey,$rand);
@@ -154,7 +152,7 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
         $iyziOrderModel->setData('order_id',$requestResponse->basketId);
         $iyziOrderModel->setData('status',$requestResponse->status);
         $iyziOrderModel->save($iyziOrderModel);
-        
+
         /* Error Redirect Start */
         if($requestResponse->paymentStatus != 'SUCCESS' || $requestResponse->status != 'success') {
 
@@ -162,7 +160,7 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
 
             if($requestResponse->status == 'success' && $requestResponse->paymentStatus == 'FAILURE') {
                 $errorMessage = __('3D Security Error');
-                
+
             }
 
             /* Redirect Error */
@@ -180,7 +178,7 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
             /* Redirect Error */
             $this->_messageManager->addError($errorMessage);
             $resultRedirect->setPath('checkout/cart', ['_secure' => true]);
-            return $resultRedirect;            
+            return $resultRedirect;
         }
 
         /* Order Price Confirmation */
@@ -192,7 +190,7 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
             /* Redirect Error */
             $this->_messageManager->addError($errorMessage);
             $resultRedirect->setPath('checkout/cart', ['_secure' => true]);
-            return $resultRedirect;            
+            return $resultRedirect;
         }
 
         /* Error Redirect End */
@@ -228,7 +226,7 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
 
         if (isset($requestResponse->installment) && !empty($requestResponse->installment) && $requestResponse->installment > 1) {
 
-            $installmentFee = $requestResponse->paidPrice - $this->_quote->getGrandTotal(); 
+            $installmentFee = $requestResponse->paidPrice - $this->_quote->getGrandTotal();
             $this->_quote->setInstallmentFee($installmentFee);
             $this->_quote->setInstallmentCount($requestResponse->installment);
 
@@ -243,12 +241,13 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
 
         } else {
 
-            $quoteId = $this->_checkoutSession->getGuestQuoteId();
-            
-            $this->_guestCartManagement->savePaymentInformationAndPlaceOrder($quoteId,$this->_customerSession->getEmail(),$this->_quote->getPayment(),$this->_checkoutSession->getBillingAddress());
+            $this->_quote->setCheckoutMethod($this->_cartManagement::METHOD_GUEST);
+            $this->_quote->setCustomerEmail($this->_customerSession->getEmail());
+
+            $this->_cartManagement->placeOrder($this->_quote->getId());
 
         }
-            
+
         $resultRedirect->setPath('checkout/onepage/success', ['_secure' => true]);
         return $resultRedirect;
 
