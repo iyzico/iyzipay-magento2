@@ -3,12 +3,13 @@
 	<default>
 		<payment>
 			<iyzipay>
-				<active>1</active>
+				<active>0</active>
 				<model>Iyzico\Iyzipay\Model\Payment\Iyzipay</model>
 				<order_status>pending</order_status>
 				<title>Kredi/Banka Kartı ile Ödeme</title>
 				<allowspecific>0</allowspecific>
 				<group>offline</group>
+				<overlayscript>hidden</overlayscript>
 			</iyzipay>
 		</payment>
 	</default>
