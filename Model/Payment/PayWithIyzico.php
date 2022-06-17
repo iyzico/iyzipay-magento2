@@ -23,7 +23,7 @@ namespace Iyzico\PayWithIyzico\Model\Payment;
 
 class PayWithIyzico extends \Magento\Payment\Model\Method\AbstractMethod
 {
-    const PLUGIN_VERSION = '1.0.0';
+    const PLUGIN_VERSION = '1.0.1';
     protected $_code = "paywithiyzico";
     protected $_isOffline = true;
 
