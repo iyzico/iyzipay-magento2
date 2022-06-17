@@ -9,6 +9,7 @@
 				<title>Kredi/Banka Kartı ile Ödeme</title>
 				<allowspecific>0</allowspecific>
 				<group>offline</group>
+				<checkout_language>TR</checkout_language>
 			</iyzipay>
 		</payment>
 	</default>

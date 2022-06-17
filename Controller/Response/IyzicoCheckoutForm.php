@@ -153,6 +153,16 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
         $iyziOrderModel->setData('status',$requestResponse->status);
         $iyziOrderModel->save($iyziOrderModel);
 
+        /*Korumalı havale eft */
+        if($requestResponse->paymentStatus == 'INIT_BANK_TRANSFER' && $requestResponse->status == 'success'){
+          $this->_quote->setCheckoutMethod($this->_cartManagement::METHOD_GUEST);
+          $this->_cartManagement->placeOrder($this->_quote->getId());
+          $resultRedirect->setPath('checkout/onepage/success', ['_secure' => true]);
+          return $resultRedirect;
+          }
+
+
+
         /* Error Redirect Start */
         if($requestResponse->paymentStatus != 'SUCCESS' || $requestResponse->status != 'success') {
 
@@ -243,13 +253,13 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
 
             $this->_quote->setCheckoutMethod($this->_cartManagement::METHOD_GUEST);
             $this->_quote->setCustomerEmail($this->_customerSession->getEmail());
-
             $this->_cartManagement->placeOrder($this->_quote->getId());
 
         }
-
         $resultRedirect->setPath('checkout/onepage/success', ['_secure' => true]);
         return $resultRedirect;
+
+
 
     }
 }

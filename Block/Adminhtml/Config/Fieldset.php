@@ -23,6 +23,8 @@ class Fieldset extends \Magento\Config\Block\System\Config\Form\Fieldset
 
     public function _getHeaderHtml($element)
     {
+
+
         if ($element->getIsNested()) {
             $html = '<tr class="nested"><td colspan="4"><div class="' . $this->_getFrontendClass($element) . '">';
         } else {
@@ -47,7 +49,7 @@ class Fieldset extends \Magento\Config\Block\System\Config\Form\Fieldset
             ) . '" />';
         $html .= '<fieldset class="config admin__collapsible-block" id="' . $element->getHtmlId() . '" style="position: relative;">';
         $html .= '<legend>' . $element->getLegend().'</legend>';
-        
+
         $html .= $this->_getHeaderCommentHtml($element);
 
         // field label column
@@ -55,14 +57,14 @@ class Fieldset extends \Magento\Config\Block\System\Config\Form\Fieldset
         if ($this->getRequest()->getParam('website') || $this->getRequest()->getParam('store')) {
             $html .= '<colgroup class="use-default" />';
         }
+
         $html .= '<colgroup class="scope-label" /><colgroup class="" /><tbody>';
         $html .= '<div style="position:absolute;right: 0px;top:0px;display: flex;flex-direction: column;justify-content: center;">
-                    <img src="'.$this->getViewFileUrl('Iyzico_Iyzipay::iyzico/logo.png').'" style="    width: 150px;
-    margin-left: auto;" />
-                    <img src="'.$this->getViewFileUrl('Iyzico_Iyzipay::iyzico/zihni.png').'" style="    width: auto;
-    margin-left: auto;" />
+                    <img src="'.$this->getViewFileUrl('Iyzico_Iyzipay::iyzico/iyzico_logo.png').'" style="    width: 200px;
+    margin-left: auto;" /><span></span>
+
                 </div>';
         return $html;
     }
-    
+
 }
