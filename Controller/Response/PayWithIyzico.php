@@ -179,13 +179,33 @@ class PayWithIyzico extends \Magento\Framework\App\Action\Action implements Csrf
         $requestResponse->paidPrice = isset($requestResponse->paidPrice) ? (float) $requestResponse->paidPrice : '';
         $requestResponse->basketId =  isset($requestResponse->basketId) ? (int) $requestResponse->basketId : '';
 
+
+        if($requestResponse->paymentStatus == 'PENDING_CREDIT' && $requestResponse->status == 'success'){
+
+            $status = 'PENDING_CREDIT';
+          }
+          else {
+            $status = $requestResponse->status;
+          }
+
         /* Insert Order Log */
         $iyziOrderModel = $this->_iyziOrderFactory->create();
         $iyziOrderModel->setData('payment_id',$requestResponse->paymentId);
         $iyziOrderModel->setData('total_amount',$requestResponse->paidPrice);
         $iyziOrderModel->setData('order_id',$requestResponse->basketId);
-        $iyziOrderModel->setData('status',$requestResponse->status);
+        $iyziOrderModel->setData('status',$status);
         $iyziOrderModel->save($iyziOrderModel);
+
+
+
+        if($requestResponse->paymentStatus == 'PENDING_CREDIT' && $requestResponse->status == 'success'){
+          $this->_quote->setCheckoutMethod($this->_cartManagement::METHOD_GUEST);
+          $this->_quote->setIyzicoPaymentId($requestResponse->paymentId);
+          $this->_quote->setPayWithIyzicoPaymentStatus('PENDING_CREDIT');
+          $this->_cartManagement->placeOrder($this->_quote->getId());
+          $resultRedirect->setPath('checkout/onepage/success', ['_secure' => true]);
+          return $resultRedirect;
+          }
 
         /* Error Redirect Start */
         if(($requestResponse->paymentStatus != 'SUCCESS' && $requestResponse->paymentStatus != 'INIT_BANK_TRANSFER') || $requestResponse->status != 'success') {
@@ -270,6 +290,9 @@ class PayWithIyzico extends \Magento\Framework\App\Action\Action implements Csrf
 
         }
 
+        if($requestResponse->paymentStatus == 'PENDING_CREDIT' && $requestResponse->status == 'success'){
+        $this->_quote->setIyzicoPaymentId($requestResponse->paymentId);
+          }
         /* Set Payment Id */
         $this->_quote->setIyzicoPaymentId($requestResponse->paymentId);
 

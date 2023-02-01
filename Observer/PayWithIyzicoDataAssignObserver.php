@@ -61,6 +61,18 @@ class PayWithIyzicoDataAssignObserver implements \Magento\Framework\Event\Observ
 
             $order = $observer->getEvent()->getOrder();
 
+            if($PayWithIyzicoPaymentStatus == 'PENDING_CREDIT')
+          {
+            $order->setState('pending');
+            $order->setStatus('pending');
+
+            $historyComment = __('Payment Success').$paymentId;
+            $order->addStatusHistoryComment($historyComment);
+
+            $historyComment = 'Alışveriş kredisi işlemi başlatıldı.';
+            $order->addStatusHistoryComment($historyComment);
+          }
+
             if($PayWithIyzicoPaymentStatus == 'pending') {
                 $order->setState('pending');
                 $order->setStatus('pending');
