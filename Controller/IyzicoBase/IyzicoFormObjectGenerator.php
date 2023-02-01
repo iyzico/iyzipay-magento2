@@ -48,7 +48,7 @@ class IyzicoFormObjectGenerator
 		$iyzico->forceThreeDS                 = "0";
 		$iyzico->callbackUrl                  = $callBack."Iyzico_Iyzipay/response/iyzicocheckoutform";
 		$iyzico->cardUserKey                  = $cardUserKey;
-		$iyzico->paymentSource                = "MAGENTO2|".$magentoVersion."|SPACE-1.0.1";
+		$iyzico->paymentSource                = "MAGENTO2|".$magentoVersion."|SPACE-1.2.0";
 
 		return $iyzico;
 
@@ -152,7 +152,7 @@ class IyzicoFormObjectGenerator
             $basketItems[$keyNumber]->id                = $item->getProductId();
             $basketItems[$keyNumber]->price             = $this->helper->priceParser(round($item->getPrice(),2));
             $basketItems[$keyNumber]->name              = $this->helper->dataCheck($item->getName());
-            $basketItems[$keyNumber]->category1         = "MAGENTO-ECOMMERCE";
+            $basketItems[$keyNumber]->category1         = $this->helper->dataCheck($item->getName());
             $basketItems[$keyNumber]->itemType          = "PHYSICAL";
 
             $keyNumber++;

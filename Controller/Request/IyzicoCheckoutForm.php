@@ -142,6 +142,7 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action
 
         $requestResponse          = $iyzicoRequest->iyzicoCheckoutFormRequest($baseUrl,$iyzicoJson,$authorization);
 
+
         $result = false;
 
         if($requestResponse->status == 'success') {

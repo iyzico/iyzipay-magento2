@@ -2,19 +2,19 @@
 /**
  * iyzico Payment Gateway For Magento 2
  * Copyright (C) 2018 iyzico
- * 
+ *
  * This file is part of Iyzico/Iyzipay.
- * 
+ *
  * Iyzico/Iyzipay is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -33,18 +33,18 @@ class DataAssignObserver implements \Magento\Framework\Event\ObserverInterface {
      * @var \Magento\Framework\ObjectManager\ObjectManager
     */
     protected $_objectManager;
-    protected $_orderFactory;    
+    protected $_orderFactory;
     protected $_checkoutSession;
 
-    
+
     public function __construct(
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Sales\Model\OrderFactory $orderFactory,
         \Magento\Framework\ObjectManager\ObjectManager $objectManager
-    ) {        
-        $this->_objectManager = $objectManager;        
+    ) {
+        $this->_objectManager = $objectManager;
         $this->_orderFactory = $orderFactory;
-        $this->_checkoutSession = $checkoutSession; 
+        $this->_checkoutSession = $checkoutSession;
     }
     /**
      * @param Observer $observer
@@ -54,12 +54,24 @@ class DataAssignObserver implements \Magento\Framework\Event\ObserverInterface {
     {
 
         if($observer->getEvent()->getOrder()->getPayment()->getMethodInstance()->getCode() == 'iyzipay'){
-            
-            
+
+
             $paymentId = $this->_checkoutSession->getQuote()->getIyzicoPaymentId();
             $iyziPaymentStatus = $this->_checkoutSession->getQuote()->getIyziPaymentStatus();
 
-            $order = $observer->getEvent()->getOrder(); 
+
+            $order = $observer->getEvent()->getOrder();
+            if($iyziPaymentStatus == 'PENDING_CREDIT')
+            {
+              $order->setState('pending');
+              $order->setStatus('pending');
+
+              $historyComment = __('Payment Success').$paymentId;
+              $order->addStatusHistoryComment($historyComment);
+
+              $historyComment = 'Alışveriş kredisi işlemi başlatıldı.';
+              $order->addStatusHistoryComment($historyComment);
+            }
 
             if($iyziPaymentStatus == 'success') {
 
@@ -70,7 +82,7 @@ class DataAssignObserver implements \Magento\Framework\Event\ObserverInterface {
                     $grandTotalWithFee = $order->getGrandTotal();
                     $subTotalWithFee = $order->getSubTotal();
 
-                    
+
                     $order->setBaseTotalPaid($grandTotalWithFee);
                     $order->setTotalPaid($grandTotalWithFee);
                     $order->setSubTotalInvoiced($subTotalWithFee);
@@ -85,7 +97,7 @@ class DataAssignObserver implements \Magento\Framework\Event\ObserverInterface {
 
                 }
 
-                /* Create Order With Installment */       
+                /* Create Order With Installment */
                 $installmentFee = $this->_checkoutSession->getQuote()->getInstallmentFee();
                 $installmentCount = $this->_checkoutSession->getQuote()->getInstallmentCount();
                 $grandTotal     = $this->_checkoutSession->getQuote()->getGrandTotal();
@@ -122,7 +134,7 @@ class DataAssignObserver implements \Magento\Framework\Event\ObserverInterface {
 
                 $order->setState('processing');
                 $order->setStatus('processing');
-                
+
                 $historyComment = __('Payment Success').$paymentId;
                 $order->addStatusHistoryComment($historyComment);
             }

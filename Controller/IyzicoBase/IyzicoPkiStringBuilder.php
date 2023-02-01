@@ -2,19 +2,19 @@
 /**
  * iyzico Payment Gateway For Magento 2
  * Copyright (C) 2018 iyzico
- * 
+ *
  * This file is part of Iyzico/Iyzipay.
- * 
+ *
  * Iyzico/Iyzipay is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -34,7 +34,7 @@ class IyzicoPkiStringBuilder
 			if(is_object($data)) {
 
 				$name = var_export($key, true);
-				$name = str_replace("'", "", $name); 
+				$name = str_replace("'", "", $name);
 				$pki_value .= $name."=[";
 
 				$end_key = count(get_object_vars($data));
@@ -44,7 +44,7 @@ class IyzicoPkiStringBuilder
 
 					$count++;
 					$name = var_export($key, true);
-					$name = str_replace("'", "", $name); 
+					$name = str_replace("'", "", $name);
 
 
 					$pki_value .= $name."="."".$value;
@@ -57,7 +57,7 @@ class IyzicoPkiStringBuilder
 
 			} else if(is_array($data)) {
 				$name = var_export($key, true);
-				$name = str_replace("'", "", $name); 
+				$name = str_replace("'", "", $name);
 
 				$pki_value .= $name."=[";
 				$end_key = count($data);
@@ -67,11 +67,11 @@ class IyzicoPkiStringBuilder
 
 					$count++;
 					$pki_value .= "[";
-					
+
 					foreach ($result as $key => $item) {
 						$name = var_export($key, true);
-						$name = str_replace("'", "", $name); 
-					
+						$name = str_replace("'", "", $name);
+
 						$pki_value .= $name."="."".$item;
 
 						if(end($result) != $item) {
@@ -82,7 +82,7 @@ class IyzicoPkiStringBuilder
 							if($end_key != $count) {
 
 								$pki_value .= "], ";
-							
+
 							} else {
 
 								$pki_value .= "]";
@@ -91,14 +91,14 @@ class IyzicoPkiStringBuilder
 					}
 				}
 
-				if(end($data) == $result) 
+				if(end($data) == $result)
 					$pki_value .= "]";
-				
+
 			} else {
 
 				$name = var_export($key, true);
-				$name = str_replace("'", "", $name); 
-				  
+				$name = str_replace("'", "", $name);
+
 
 				$pki_value .= $name."="."".$data."";
 			}
@@ -133,10 +133,10 @@ class IyzicoPkiStringBuilder
 		$form_object->billingAddress = $objectData->billingAddress;
 
 		foreach ($objectData->basketItems as $key => $item) {
-			
+
 			$form_object->basketItems[$key] = new stdClass();
 			$form_object->basketItems[$key] = $item;
-			
+
 		}
 
 		$form_object->callbackUrl 			= $objectData->callbackUrl;
@@ -153,14 +153,14 @@ class IyzicoPkiStringBuilder
 
 		$hash_value = $apiKey.$rand.$secretKey.$pkiString;
 		$hash 		= base64_encode(sha1($hash_value,true));
-		
+
 		$authorization 	= 'IYZWS '.$apiKey.':'.$hash;
-		
+
 		$authorization_data = array(
 			'authorization' => $authorization,
 			'rand_value' 	=> $rand
 		);
-		
+
 		return $authorization_data;
 	}
 }
