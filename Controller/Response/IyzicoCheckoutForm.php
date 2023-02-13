@@ -214,6 +214,16 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
               $entity_id= $result[0]['entity_id'];
               $order = $objectManager->create('\Magento\Sales\Model\Order')->load($entity_id);
 
+              if($webhookIyziEventType == 'BANK_TRANSFER_AUTH' && $requestResponse->status == 'SUCCESS')
+              {
+                $order->setState('processing');
+                $order->setStatus('processing');
+                $historyComment = 'Bank Transfer success.';
+                $order->addStatusHistoryComment($historyComment);
+                $order->save();
+                return 'ok';
+
+              }
 
               if($webhookIyziEventType == 'CREDIT_PAYMENT_PENDING' && $requestResponse->paymentStatus == 'PENDING_CREDIT')
               {
