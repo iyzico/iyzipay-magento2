@@ -188,11 +188,21 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
 
         if($webhook == 'webhook' && $requestResponse->status == 'success' &&  $requestResponse->paymentStatus == 'SUCCESS')
         {
-
-
           $tableName = $resource->getTableName('sales_order'); //gives table name with prefix
           $sql = "Select * FROM " . $tableName." Where quote_id = ".$requestResponse->basketId;
           $result = $connection->fetchAll($sql);
+
+          if($webhookIyziEventType == 'BANK_TRANSFER_AUTH' && $requestResponse->status == 'success')
+          {
+            $entity_id= $result[0]['entity_id'];
+            $order = $objectManager->create('\Magento\Sales\Model\Order')->load($entity_id);
+            $order->setState('processing');
+            $order->setStatus('processing');
+            $historyComment = 'Bank Transfer success.';
+            $order->addStatusHistoryComment($historyComment);
+            $order->save();
+            return 'ok';
+          }
           if(!empty($result))
           {
             return $this->webhookHttpResponse("Order Exist - Sipariş zaten var.", 200);
@@ -214,16 +224,6 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
               $entity_id= $result[0]['entity_id'];
               $order = $objectManager->create('\Magento\Sales\Model\Order')->load($entity_id);
 
-              if($webhookIyziEventType == 'BANK_TRANSFER_AUTH' && $requestResponse->status == 'SUCCESS')
-              {
-                $order->setState('processing');
-                $order->setStatus('processing');
-                $historyComment = 'Bank Transfer success.';
-                $order->addStatusHistoryComment($historyComment);
-                $order->save();
-                return 'ok';
-
-              }
 
               if($webhookIyziEventType == 'CREDIT_PAYMENT_PENDING' && $requestResponse->paymentStatus == 'PENDING_CREDIT')
               {
@@ -293,6 +293,7 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
           $this->_quote->setCheckoutMethod($this->_cartManagement::METHOD_GUEST);
           $this->_cartManagement->placeOrder($this->_quote->getId());
           $this->_quote->setIyzicoPaymentId($requestResponse->paymentId);
+
           $resultRedirect->setPath('checkout/onepage/success', ['_secure' => true]);
           return $resultRedirect;
           }
