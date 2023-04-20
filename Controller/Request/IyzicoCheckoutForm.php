@@ -129,6 +129,7 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action
         }
 
         $iyzico = $iyzicoFormObject->generateOption($checkoutSession,$customerCardUserKey,$locale,$currency,$cardId,$callBack,$magentoVersion);
+  
         $iyzico->buyer = $iyzicoFormObject->generateBuyer($checkoutSession,$guestEmail);
         $iyzico->billingAddress = $iyzicoFormObject->generateBillingAddress($checkoutSession);
         $iyzico->shippingAddress = $iyzicoFormObject->generateShippingAddress($checkoutSession);
