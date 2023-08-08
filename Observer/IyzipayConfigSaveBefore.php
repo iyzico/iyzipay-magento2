@@ -127,6 +127,7 @@ class IyzipayConfigSaveBefore implements ObserverInterface
           $iyzicoJson = json_encode($setWebhookUrl,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 
           $requestResponseWebhook = $iyzicoRequest->iyzicoPostWebhookUrlKey($baseUrl,$iyzicoJson,$authorization);
+          $requestResponseWebhook->merchantNotificationUpdateStatus == 'UPDATED';
           if($requestResponseWebhook->merchantNotificationUpdateStatus == 'UPDATED' || $requestResponseWebhook->merchantNotificationUpdateStatus == 'CREATED')
           {
             $this->_configWriter->save('payment/iyzipay/webhook_url_key_active',  '1', $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = 0);
