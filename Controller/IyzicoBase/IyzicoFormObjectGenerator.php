@@ -47,7 +47,7 @@ class IyzicoFormObjectGenerator
 		$iyzico->paymentGroup                 = 'PRODUCT';
 		$iyzico->callbackUrl                  = $callBack."Iyzico_PayWithIyzico/response/paywithiyzico";
     $iyzico->cancelUrl 					          = $callBack;
-		$iyzico->paymentSource                = "MAGENTO2|".$magentoVersion."|SPACE-1.0|PWI";
+		$iyzico->paymentSource                = "MAGENTO2|".$magentoVersion."|SPACE-1.2.0|PWI";
 
 		return $iyzico;
 
