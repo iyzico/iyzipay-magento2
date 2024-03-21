@@ -352,7 +352,6 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
 
 
             if ($webhook != 'webhook' && $requestResponse->paymentStatus == 'PENDING_CREDIT' && $requestResponse->status == 'success') {
-
                 $this->_quote->setIyziPaymentStatus('PENDING_CREDIT');
                 $this->_quote->setIyzicoPaymentId($requestResponse->paymentId);
             } else {
@@ -401,15 +400,24 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
             /* Set Payment Id */
             $this->_quote->setIyzicoPaymentId($requestResponse->paymentId);
 
-            if ($webhook == 'webhook' && $requestResponse->status == 'success' && $requestResponse->paymentStatus == 'SUCCESS') {
-
+            if ($webhook == 'webhook'
+                && $requestResponse->status == 'success'
+                && $requestResponse->paymentStatus == 'SUCCESS'
+            ) {
+                $this->logger->info("iyzico Webhook : webhook | paymentStatus : SUCCESS | status : success");
                 try {
-                    $this->_quote->setCheckoutMethod($this->_cartManagement::METHOD_GUEST);
-                    $this->_quote->setCustomerEmail($this->_customerSession->getEmail());
-                    $this->_cartManagement->placeOrder($requestResponse->basketId);
-                    return $this->webhookHttpResponse("Order Created by Webhook - Sipariş webhook tarafından oluşturuldu.", 200);
+                    $result = [];
+                    if (isset ($requestResponse->basketId)) {
+                        $result = $this->leapHelper->checkOrderExist($requestResponse->basketId);
+                    }
+                    if (empty ($result)) {
+                        $this->_cartManagement->placeOrder($this->_quote->getId());
+                        $this->_quote->setCheckoutMethod($this->_cartManagement::METHOD_GUEST);
+                        $this->_quote->setCustomerEmail($this->_customerSession->getEmail());
+                        return $this->webhookHttpResponse("Order Created by Webhook - Sipariş webhook tarafından oluşturuldu.", 200);
+                    }
                 } catch (\Exception $e) {
-                    return $this->webhookHttpResponse("Order Created by Webhook - Sipariş webhook tarafından oluşturuldu.", 200);
+                    return $this->webhookHttpResponse("Order Not Created by Webhook - Error : {$e->getMessage()}", 200);
                 }
 
             }
