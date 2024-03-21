@@ -9,6 +9,11 @@
 					<label>Enabled</label>
 					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
 				</field>
+				<field id="iyzipay_webhook_url" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+          <label>Webhook URL </label>
+          <frontend_model>Iyzico\Iyzipay\Block\Adminhtml\Config\getWebhookUrl</frontend_model>
+          <comment model="Iyzico\Iyzipay\Model\Config\IyzicowebhhokUrlComment"/>
+        </field>
 				<field id="sandbox" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label" type="select">
 					<label>Sandbox</label>
 					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

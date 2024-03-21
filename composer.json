@@ -1,8 +1,8 @@
 {
-    "name": "iyzico/module-iyzipay",
+    "name": "iyzico/iyzipay",
     "description": "iyzico Payment Gateway For Magento 2",
     "type": "magento2-module",
-    "version": "1.0.0",
+    "version": "1.8.0",
     "license": "GPL-3.0",
     "authors": [
         {

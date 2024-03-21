@@ -2,19 +2,19 @@
 /**
  * iyzico Payment Gateway For Magento 2
  * Copyright (C) 2018 iyzico
- * 
+ *
  * This file is part of Iyzico/Iyzipay.
- * 
+ *
  * Iyzico/Iyzipay is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -24,7 +24,7 @@ namespace Iyzico\Iyzipay\Controller\IyzicoBase;
 use stdClass;
 use Iyzico\Iyzipay\Helper\IyzicoHelper;
 
-class IyzicoFormObjectGenerator 
+class IyzicoFormObjectGenerator
 {
 	 protected $helper;
 
@@ -48,8 +48,9 @@ class IyzicoFormObjectGenerator
 		$iyzico->forceThreeDS                 = "0";
 		$iyzico->callbackUrl                  = $callBack."Iyzico_Iyzipay/response/iyzicocheckoutform";
 		$iyzico->cardUserKey                  = $cardUserKey;
-		$iyzico->paymentSource                = "MAGENTO2|".$magentoVersion."|SPACE-1.0";
-		
+		$iyzico->paymentSource                = "MAGENTO2|".$magentoVersion."|SPACE-1.8.0";
+		$iyzico->goBackUrl 					          = $callBack;
+
 		return $iyzico;
 
 	}
@@ -68,27 +69,27 @@ class IyzicoFormObjectGenerator
         if($billingAddress->getEmail()){
 
         	$email = $billingAddress->getEmail();
-        
+
         } else {
-  
+
         	$email = $guestEmail;
         }
-        
+
 		$buyer = new stdClass();
 
         $buyer->id                          = $billingAddress->getId();
         $buyer->name                        = $this->helper->dataCheck($billingAddress->getName());
         $buyer->surname                     = $this->helper->dataCheck($billingAddress->getName());
-        $buyer->identityNumber              = "11111111111";   
-        $buyer->email                       = $this->helper->dataCheck($email);  
-        $buyer->gsmNumber                   = $this->helper->dataCheck($billingAddress->getTelephone());  
+        $buyer->identityNumber              = "11111111111";
+        $buyer->email                       = $this->helper->dataCheck($email);
+        $buyer->gsmNumber                   = $this->helper->dataCheck($billingAddress->getTelephone());
         $buyer->registrationDate            = "2018-07-06 11:11:11";
         $buyer->lastLoginDate               = "2018-07-06 11:11:11";
-        $buyer->registrationAddress         = $this->helper->dataCheck($billingStreet);   
+        $buyer->registrationAddress         = $this->helper->dataCheck($billingStreet);
         $buyer->city                        = $this->helper->dataCheck($billingAddress->getCity());
-        $buyer->country                     = $this->helper->dataCheck($billingAddress->getCountry());    
-        $buyer->zipCode                     = $this->helper->dataCheck($billingAddress->getPostCode());  
-        $buyer->ip                          = $_SERVER['REMOTE_ADDR'];  
+        $buyer->country                     = $this->helper->dataCheck($billingAddress->getCountry());
+        $buyer->zipCode                     = $this->helper->dataCheck($billingAddress->getPostCode());
+        $buyer->ip                          = $_SERVER['REMOTE_ADDR'];
 
         return $buyer;
 	}
@@ -130,10 +131,10 @@ class IyzicoFormObjectGenerator
 		$billingAddressObj = new stdClass();
 
 		$billingAddressObj->address          = $this->helper->dataCheck($billingStreet);
-		$billingAddressObj->zipCode          = $this->helper->dataCheck($billingAddress->getPostCode()); 
+		$billingAddressObj->zipCode          = $this->helper->dataCheck($billingAddress->getPostCode());
 		$billingAddressObj->contactName      = $this->helper->dataCheck($billingAddress->getName());
 		$billingAddressObj->city             = $this->helper->dataCheck($billingAddress->getCity());
-		$billingAddressObj->country          = $this->helper->dataCheck($billingAddress->getCountry());    
+		$billingAddressObj->country          = $this->helper->dataCheck($billingAddress->getCountry());
 
 		return $billingAddressObj;
 	}
@@ -152,7 +153,7 @@ class IyzicoFormObjectGenerator
             $basketItems[$keyNumber]->id                = $item->getProductId();
             $basketItems[$keyNumber]->price             = $this->helper->priceParser(round($item->getPrice(),2));
             $basketItems[$keyNumber]->name              = $this->helper->dataCheck($item->getName());
-            $basketItems[$keyNumber]->category1         = "MAGENTO-ECOMMERCE";
+            $basketItems[$keyNumber]->category1         = $this->helper->dataCheck($item->getName());
             $basketItems[$keyNumber]->itemType          = "PHYSICAL";
 
             $keyNumber++;

@@ -2,19 +2,19 @@
 /**
  * iyzico Payment Gateway For Magento 2
  * Copyright (C) 2018 iyzico
- * 
+ *
  * This file is part of Iyzico/Iyzipay.
- * 
+ *
  * Iyzico/Iyzipay is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -30,85 +30,74 @@ class IyzicoPkiStringBuilder
 
 		$pki_value = "[";
 		foreach ($objectData as $key => $data) {
-
 			if(is_object($data)) {
-
 				$name = var_export($key, true);
-				$name = str_replace("'", "", $name); 
+				$name = str_replace("'", "", $name);
 				$pki_value .= $name."=[";
-
 				$end_key = count(get_object_vars($data));
 				$count 	 = 0;
-
 				foreach ($data as $key => $value) {
-
 					$count++;
 					$name = var_export($key, true);
-					$name = str_replace("'", "", $name); 
-
-
+					$name = str_replace("'", "", $name);
 					$pki_value .= $name."="."".$value;
-
 					if($end_key != $count)
 						$pki_value .= ",";
 				}
-
 				$pki_value .= "]";
-
 			} else if(is_array($data)) {
 				$name = var_export($key, true);
-				$name = str_replace("'", "", $name); 
-
+				$name = str_replace("'", "", $name);
 				$pki_value .= $name."=[";
 				$end_key = count($data);
 				$count 	 = 0;
-
 				foreach ($data as $key => $result) {
-
 					$count++;
 					$pki_value .= "[";
-					
+
 					foreach ($result as $key => $item) {
 						$name = var_export($key, true);
-						$name = str_replace("'", "", $name); 
-					
-						$pki_value .= $name."="."".$item;
+						$name = str_replace("'", "", $name);
 
-						if(end($result) != $item) {
+						$pki_value .= $name."="."".$item;
+						$reResult = (array) $result;
+            $newResult = $reResult[array_key_last($reResult)];
+
+						if($newResult != $item) {
 							$pki_value .= ",";
 						}
 
-						if(end($result) == $item) {
+						if($newResult == $item) {
+
 							if($end_key != $count) {
-
 								$pki_value .= "], ";
-							
-							} else {
 
+							} else {
 								$pki_value .= "]";
 							}
 						}
 					}
 				}
 
-				if(end($data) == $result) 
+				$reData = (array) $data;
+        $newData = $reData[array_key_last($reData)];
+				if($newData == $result)
 					$pki_value .= "]";
-				
-			} else {
 
+			} else {
 				$name = var_export($key, true);
-				$name = str_replace("'", "", $name); 
-				  
+				$name = str_replace("'", "", $name);
 
 				$pki_value .= $name."="."".$data."";
 			}
 
-			if(end($objectData) != $data)
+				$reObjectData = (array)$objectData;
+        $newobjectData = $reObjectData[array_key_last($reObjectData)];
+
+			if($newobjectData != $data)
 				$pki_value .= ",";
 		}
-
 		$pki_value .= "]";
-
 		return $pki_value;
 	}
 
@@ -133,10 +122,10 @@ class IyzicoPkiStringBuilder
 		$form_object->billingAddress = $objectData->billingAddress;
 
 		foreach ($objectData->basketItems as $key => $item) {
-			
+
 			$form_object->basketItems[$key] = new stdClass();
 			$form_object->basketItems[$key] = $item;
-			
+
 		}
 
 		$form_object->callbackUrl 			= $objectData->callbackUrl;
@@ -145,6 +134,7 @@ class IyzicoPkiStringBuilder
 		$form_object->paidPrice   			= $objectData->paidPrice;
 		$form_object->forceThreeDS 			= $objectData->forceThreeDS;
 		$form_object->cardUserKey 			= $objectData->cardUserKey;
+		$form_object->goBackUrl 			  = $objectData->goBackUrl;
 
 		return $form_object;
 	}
@@ -153,14 +143,14 @@ class IyzicoPkiStringBuilder
 
 		$hash_value = $apiKey.$rand.$secretKey.$pkiString;
 		$hash 		= base64_encode(sha1($hash_value,true));
-		
+
 		$authorization 	= 'IYZWS '.$apiKey.':'.$hash;
-		
+
 		$authorization_data = array(
 			'authorization' => $authorization,
 			'rand_value' 	=> $rand
 		);
-		
+
 		return $authorization_data;
 	}
 }

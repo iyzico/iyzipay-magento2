@@ -12,4 +12,5 @@
     <event name="sales_order_invoice_save_before">
         <observer name="installment_fee_invoice_assign" instance="Iyzico\Iyzipay\Observer\SalesOrderInvoiceSaveBefore" />
     </event>
+    
 </config>

@@ -6,9 +6,10 @@
 				<active>1</active>
 				<model>Iyzico\Iyzipay\Model\Payment\Iyzipay</model>
 				<order_status>pending</order_status>
-				<title>iyzipay</title>
+				<title>Kredi/Banka Kartı ile Ödeme</title>
 				<allowspecific>0</allowspecific>
 				<group>offline</group>
+				<checkout_language>TR</checkout_language>
 			</iyzipay>
 		</payment>
 	</default>
