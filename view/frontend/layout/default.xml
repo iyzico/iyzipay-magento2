@@ -4,7 +4,7 @@
     </head>
     <body>
         <referenceContainer name="content">
-            <block class="Iyzico\Iyzipay\Block\OverlayScript" name="overlay.script" template="Iyzico_Iyzipay::overlayscript.phtml"/>
+            <block class="Iyzico\Iyzipay\Block\Iyzipay\OverlayScript" name="overlay.script" template="Iyzico_Iyzipay::overlayscript.phtml"/>
         </referenceContainer>
     </body>
 </page>

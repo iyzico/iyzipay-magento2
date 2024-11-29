@@ -1,48 +1,109 @@
-# iyzico - Magento 2 Payment Gateway
-------------
-* Create live account at https://merchant.iyzipay.com
-* Create test account at https://sandbox-iyzipay.com
 
-# Requirements
-------------
-* PHP 7.0.x and greater.
-* cURL
-* [Magento2 version 2.2+](https://devdocs.magento.com/guides/v2.2/install-gde/system-requirements-tech.html)
+# iyzico for Adobe Commerce (Magento 2)
 
-# Collaboration
-------------
-* We commit all our new features directly into our GitHub repository. But you can also request or suggest new features or code changes yourself!
+iyzico Payment Gateway integration for Magento 2, offering a seamless payment experience for your e-commerce store.
 
-# Installation
----------------
-```php
-* Copy or download the repository
-* Create the iyzico folder in the app folder. In the Iyzico folder, create the Iyzipay folder. (app -> Iyzico -> Iyzipay)
-* Send the repository files into the Iyzipay folder
-* bin/magento module:enable Iyzico_Iyzipay --clear-static-content
-* bin/magento setup:upgrade
-* bin/magento setup:di:compile
-* bin/magento module:status
-* Enjoy :)
+## 🚀 Features
+
+- Payment by Debit or Credit Card
+- Ease of Payment in Installments
+- Payment with Shopping Credit
+- Payment with Internal & Interbank Transfer
+- Guest User Payment
+- iyzico Protected
+
+## 📋 Requirements
+
+- PHP 8.2 or higher
+- cURL extension
+- GuzzleHttp library
+## 🛠️ Installation 
+
+* Create the directory structure:
+
+```bash
+# Navigate to the app directory
+cd app
+
+# Create a new directory named code
+mkdir code
+
+# Navigate to the code directory
+cd code
+
+# Create a new directory named Iyzico
+mkdir Iyzico
+
+# Navigate to the Iyzico directory
+cd Iyzico
 ```
 
-<a href="https://dev-beta.iyzipay.com/tr/3-secenek/teknik-bilgi-gerekli">Detailed Info</a>
+* Clone or download this repository into the `app/code/Iyzico` directory.
 
-# Support
----------------
-* You can create issues on our Magento Repository. In case of specific problems with your account, please contact support@iyzico.com.
+```bash
+git clone <repo-url> "Iyzipay"
+```
 
-# Additional Features
----------------------
-* Installment Management Support
-* Guest Checkout Payment Support
-* iyzico Protected Script Support
-* Live / Sandbox Support
+* Run the following Magento commands:
 
-# Notes
----------------
-* Developed and Tested on vanilla Magento2 2.2+ Installation
+```bash
+# Enable the Iyzico module and clear static content
+bin/magento module:enable Iyzico_Iyzipay --clear-static-content
 
-# License
----------------
-* MIT license. For more information, see the LICENSE file.
+# Upgrade the setup
+bin/magento setup:upgrade
+
+# Deploy static content
+bin/magento setup:static-content:deploy -f
+
+# Compile dependency injection
+bin/magento setup:di:compile
+
+# Clean the cache
+bin/magento cache:clean
+
+# Flush the cache
+bin/magento cache:flush
+
+# Cron install
+bin/magento cron:install
+
+# Cron run
+bin/magento cron:run
+```
+
+## 🔧 Configuration
+
+* Create a live account at [https://merchant.iyzipay.com](https://merchant.iyzipay.com)
+* Create a test account at [https://sandbox-iyzipay.com](https://sandbox-iyzipay.com)
+* Configure the module in Magento admin panel under Stores > Configuration > Sales > Payment Methods
+## 🤝 Contributing
+
+We welcome contributions! Please feel free to submit a Pull Request.
+  
+## 📘 Documentation
+
+For detailed integration information, please visit our [Technical Documentation](https://docs.iyzico.com/).
+
+## 🆘 Support
+
+If you encounter any issues, please:
+
+* Check our [issue tracker](https://github.com/your-repo/issues) for known issues
+* Create a new issue if your problem is not yet reported
+* For account-specific problems, contact support@iyzico.com
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgements
+
+- [@tarikkamat](https://www.github.com/tarikkamat)
+- Magento community
+- All our contributors and users
+
+---
+
+Made with ❤️ by iyzico Team
+  

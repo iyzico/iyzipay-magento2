@@ -1,8 +1,14 @@
 <?xml version="1.0" ?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
 	<router id="standard">
-		<route frontName="Iyzico_Iyzipay" id="Iyzico_Iyzipay">
+		<route frontName="iyzico" id="iyzico">
 			<module name="Iyzico_Iyzipay"/>
 		</route>
+         <route id="checkout" frontName="checkout">
+            <module name="Iyzico_Iyzipay" />
+        </route>
+         <route id="iyzipay" frontName="iyzipay">
+            <module name="Iyzico_Iyzipay" />
+        </route>
 	</router>
 </config>

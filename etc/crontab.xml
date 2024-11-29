@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="default">
+        <job name="iyzico_process_pending_orders" instance="Iyzico\Iyzipay\Cron\ProcessPendingOrders" method="execute">
+            <config_path>crontab/default/jobs/iyzico_process_pending_orders/schedule/cron_expr</config_path>
+        </job>
+    </group>
+</config>
