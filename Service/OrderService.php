@@ -128,7 +128,7 @@ class OrderService
         }
 
         if (!$isWebhook) {
-            $order->addCommentToStatusHistory("Payment ID: " . $response->getPaymentId() . " - Conversation ID:" . $response->getConversationId());
+            $order->addCommentToStatusHistory("Payment ID: ".$response->getPaymentId()." - Conversation ID:".$response->getConversationId());
         }
 
         $order->setCanSendNewEmailFlag(true);
@@ -149,7 +149,7 @@ class OrderService
             return $this->orderRepository->get($orderId);
         } catch (Exception $e) {
             $this->errorLogger->critical(
-                "findOrderById: $orderId - Message: " . $e->getMessage(),
+                "findOrderById: $orderId - Message: ".$e->getMessage(),
                 ['fileName' => __FILE__, 'lineNumber' => __LINE__]
             );
             return null;
@@ -181,7 +181,7 @@ class OrderService
     /**
      * Cancel Order
      *
-     * @param string $orderId
+     * @param  string  $orderId
      * @return void
      */
     public function cancelOrder(string $orderId): void

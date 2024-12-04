@@ -1,34 +1,43 @@
 <?xml version="1.0"?>
-<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
-  <table name="iyzico_order_job" resource="default" engine="innodb" comment="iyzico Order Job List">
-    <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" identity="true" comment="Id"/>
-    <column xsi:type="int" name="order_id" padding="10" unsigned="true" nullable="true" identity="false" comment="Magento Order Id"/>
-    <column xsi:type="int" name="quote_id" padding="10" unsigned="true" nullable="false" identity="false" comment="Magento Quote Id"/>
-    <column xsi:type="varchar" name="iyzico_payment_token" nullable="false" length="255" comment="iyzico Payment Token"/>
-    <column xsi:type="varchar" name="iyzico_conversation_id" nullable="false" length="255" comment="iyzico Payment Conversation Id"/>
-    <column xsi:type="varchar" name="status" nullable="false" length="255" comment="Status"/>
-    <constraint xsi:type="primary" referenceId="PRIMARY">
-      <column name="id"/>
-    </constraint>
-    <constraint xsi:type="foreign" referenceId="MAGE_IYZICO_ORDER_JOB_QUOTE_ID_QUOTE_ENTITY_ID" table="iyzico_order_job" column="quote_id" referenceTable="quote" referenceColumn="entity_id" onDelete="CASCADE"/>
-    <index referenceId="MAGE_IYZICO_ORDER_JOB_IYZICO_PAYMENT_TOKEN" indexType="btree">
-      <column name="iyzico_payment_token"/>
-    </index>
-    <index referenceId="MAGE_IYZICO_ORDER_JOB_IYZICO_CONVERSATIONID" indexType="btree">
-      <column name="iyzico_conversation_id"/>
-    </index>
-    <index referenceId="MAGE_IYZICO_ORDER_JOB_STATUS" indexType="btree">
-      <column name="status"/>
-    </index>
-  </table>
-  <table name="iyzico_card" resource="default" engine="innodb" comment="iyzico Card">
-    <column xsi:type="int" name="iyzico_card_id" padding="10" unsigned="true" nullable="false" identity="true" comment="Id"/>
-    <column xsi:type="int" name="customer_id" padding="11" unsigned="false" nullable="false" identity="false" comment="Magento Customer Id"/>
-    <column xsi:type="varchar" name="card_user_key" nullable="false" length="255" comment="iyzico Card User Key"/>
-    <column xsi:type="varchar" name="api_key" nullable="false" length="255" comment="iyzico API KEY"/>
-    <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
-    <constraint xsi:type="primary" referenceId="PRIMARY">
-      <column name="iyzico_card_id"/>
-    </constraint>
-  </table>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="iyzico_order_job" resource="default" engine="innodb" comment="iyzico Order Job List">
+        <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" identity="true" comment="Id"/>
+        <column xsi:type="int" name="order_id" padding="10" unsigned="true" nullable="true" identity="false"
+                comment="Magento Order Id"/>
+        <column xsi:type="int" name="quote_id" padding="10" unsigned="true" nullable="false" identity="false"
+                comment="Magento Quote Id"/>
+        <column xsi:type="varchar" name="iyzico_payment_token" nullable="false" length="255"
+                comment="iyzico Payment Token"/>
+        <column xsi:type="varchar" name="iyzico_conversation_id" nullable="false" length="255"
+                comment="iyzico Payment Conversation Id"/>
+        <column xsi:type="varchar" name="status" nullable="false" length="255" comment="Status"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="MAGE_IYZICO_ORDER_JOB_QUOTE_ID_QUOTE_ENTITY_ID"
+                    table="iyzico_order_job" column="quote_id" referenceTable="quote" referenceColumn="entity_id"
+                    onDelete="CASCADE"/>
+        <index referenceId="MAGE_IYZICO_ORDER_JOB_IYZICO_PAYMENT_TOKEN" indexType="btree">
+            <column name="iyzico_payment_token"/>
+        </index>
+        <index referenceId="MAGE_IYZICO_ORDER_JOB_IYZICO_CONVERSATIONID" indexType="btree">
+            <column name="iyzico_conversation_id"/>
+        </index>
+        <index referenceId="MAGE_IYZICO_ORDER_JOB_STATUS" indexType="btree">
+            <column name="status"/>
+        </index>
+    </table>
+    <table name="iyzico_card" resource="default" engine="innodb" comment="iyzico Card">
+        <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" identity="true" comment="Id"/>
+        <column xsi:type="int" name="customer_id" padding="11" unsigned="false" nullable="false" identity="false"
+                comment="Magento Customer Id"/>
+        <column xsi:type="varchar" name="card_user_key" nullable="false" length="255" comment="iyzico Card User Key"/>
+        <column xsi:type="varchar" name="api_key" nullable="false" length="255" comment="iyzico API KEY"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP"
+                comment="Created At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+        </constraint>
+    </table>
 </schema>

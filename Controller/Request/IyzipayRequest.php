@@ -82,7 +82,6 @@ class IyzipayRequest implements ActionInterface
         $currency = $this->configHelper->getCurrency();
 
         // Ensure the cookies are same site
-        $this->utilityHelper->ensureCookiesSameSite();
         $resultJson = $this->resultJsonFactory->create();
         $checkoutSession = $this->checkoutSession->getQuote();
 

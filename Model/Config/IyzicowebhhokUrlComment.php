@@ -14,10 +14,10 @@ class IyzicowebhhokUrlComment implements CommentInterface
 {
 
     /**
-     * @param  string $elementValue
+     * @param  string  $elementValue
      * @return Phrase|string
      */
-    public function getCommentText($elementValue)
+    public function getCommentText($elementValue): Phrase|string
     {
         return __("Don't forget to do webhook Integration.");
     }

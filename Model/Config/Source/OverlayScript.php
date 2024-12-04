@@ -21,20 +21,26 @@
 
 namespace Iyzico\Iyzipay\Model\Config\Source;
 
+use Magento\Framework\Data\OptionSourceInterface;
+
 /**
  * @api
  * @since 100.0.2
  */
-class OverlayScript implements \Magento\Framework\Option\ArrayInterface
+class OverlayScript implements OptionSourceInterface
 {
     /**
      * Options getter
      *
      * @return array
      */
-    public function toOptionArray()
+    public function toOptionArray(): array
     {
-        return [['value' => 'bottomLeft', 'label' => __('Bottom Left')], ['value' => 'bottomRight', 'label' => __('Bottom Right')], ['value' => 'hidden', 'label' => __('Hidden')]];
+        return [
+            ['value' => 'bottomLeft', 'label' => __('Bottom Left')],
+            ['value' => 'bottomRight', 'label' => __('Bottom Right')],
+            ['value' => 'hidden', 'label' => __('Hidden')]
+        ];
     }
 
     /**
@@ -42,7 +48,7 @@ class OverlayScript implements \Magento\Framework\Option\ArrayInterface
      *
      * @return array
      */
-    public function toArray()
+    public function toArray(): array
     {
         return ['bottomLeft' => __('Bottom Left'), 'bottomRight' => __('Bottom Right'), 'hidden' => __('Hidden')];
     }

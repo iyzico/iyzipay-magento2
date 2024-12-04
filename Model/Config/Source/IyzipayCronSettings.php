@@ -22,11 +22,11 @@
 
 namespace Iyzico\Iyzipay\Model\Config\Source;
 
-use Magento\Framework\Option\ArrayInterface;
+use Magento\Framework\Data\OptionSourceInterface;
 
-class IyzipayCronSettings implements ArrayInterface
+class IyzipayCronSettings implements OptionSourceInterface
 {
-    public function toOptionArray()
+    public function toOptionArray(): array
     {
         return [
             ['value' => '* * * * *', 'label' => __('Every Minute')],
