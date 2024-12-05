@@ -1,0 +1,33 @@
+{
+    "iyzico_order_job": {
+        "column": {
+            "id": true,
+            "order_id": true,
+            "quote_id": true,
+            "iyzico_payment_token": true,
+            "iyzico_conversation_id": true,
+            "status": true
+        },
+        "index": {
+            "IYZICO_ORDER_JOB_IYZICO_PAYMENT_TOKEN": true,
+            "IYZICO_ORDER_JOB_IYZICO_CONVERSATION_ID": true,
+            "IYZICO_ORDER_JOB_STATUS": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "IYZICO_ORDER_JOB_QUOTE_ID_QUOTE_ENTITY_ID": true
+        }
+    },
+    "iyzico_card": {
+        "column": {
+            "id": true,
+            "customer_id": true,
+            "card_user_key": true,
+            "api_key": true,
+            "created_at": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    }
+}

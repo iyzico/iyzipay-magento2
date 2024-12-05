@@ -41,6 +41,7 @@ use Magento\Store\Model\StoreManagerInterface;
 class ProcessPendingOrders
 {
     protected const PAGE_SIZE = 100;
+    protected const IYZICO_TOKEN_EXPIRATION_MIN = 30;
 
     public function __construct(
         protected readonly IyziCronLogger $cronLogger,
@@ -122,23 +123,28 @@ class ProcessPendingOrders
 
     private function processOrders($orders, &$ordersToDelete): void
     {
-
         $this->cronLogger->info('Processing orders', ['count' => count($orders)]);
-        $this->cronLogger->info('Orders', ['orders' => $orders]);
-        $this->cronLogger->info('OrdersToDelete', ['ordersToDelete' => $ordersToDelete]);
-
         $promises = [];
         $client = new Client();
 
         foreach ($orders as $order) {
+            // Check payment expiration and order status before processing
+            if (!$this->shouldProcessOrder($order)) {
+                continue;
+            }
+
             $token = $order->getIyzicoPaymentToken();
             $conversationId = $order->getIyzicoConversationId();
-            $promises[$order->getId()] = $this->getPaymentDetailAsync($ $token, $conversationId);
+            $promises[$order->getId()] = $this->getPaymentDetailAsync($token, $conversationId);
         }
 
         $responses = Utils::settle($promises)->wait();
 
         foreach ($orders as $order) {
+            if (!isset($responses[$order->getId()]) || $responses[$order->getId()]['state'] !== 'fulfilled') {
+                continue;
+            }
+
             $response = $responses[$order->getId()]['value'];
             $responseBody = json_decode($response->getRawResult());
 
@@ -153,7 +159,8 @@ class ProcessPendingOrders
             $order = $this->updateLastControlDate($order);
             $order->save();
 
-            if ($order->getStatus() == 'canceled' || $order->getStatus() == 'processing') {
+            if ($this->shouldCancelOrder($order, $responseBody)) {
+                $this->cancelOrder($order);
                 $ordersToDelete[] = $order->getId();
             }
         }
@@ -290,5 +297,94 @@ class ProcessPendingOrders
 
         $this->cronLogger->info("Bulk delete completed", ['deleted_count' => $deletedCount]);
     }
+
+    private function isPaymentExpired($order): bool
+    {
+        $expirationTime = strtotime($order->getCreatedAt()) + self::IYZICO_TOKEN_EXPIRATION_MIN;
+        return time() > $expirationTime;
+    }
+
+    private function shouldProcessOrder($order): bool
+    {
+        if (!$this->isPaymentExpired($order)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function shouldCancelOrder($order, $responseBody): bool
+    {
+        $paymentStatus = $responseBody->getPaymentStatus() ?? '';
+        $status = $responseBody->getStatus() ?? '';
+
+        $cancelConditions = [
+            ($status == 'failure'),
+            ($paymentStatus == 'INIT_BANK_TRANSFER' && $this->isBankTransferExpired($order)),
+            ($paymentStatus == 'PENDING_CREDIT' && $this->isOrderTooOld($order))
+        ];
+
+        return in_array(true, $cancelConditions);
+    }
+
+    private function cancelOrder($order): void
+    {
+        try {
+            $magentoOrder = $this->orderRepository->get($order->getOrderId());
+            $this->releaseStock($magentoOrder);
+
+            $magentoOrder->setState("canceled");
+            $magentoOrder->setStatus("canceled");
+            $magentoOrder->addStatusHistoryComment(__("Order automatically canceled by iyzico payment gateway"));
+
+            $this->orderRepository->save($magentoOrder);
+
+            $this->cronLogger->info('Order canceled', [
+                'order_id' => $order->getOrderId(),
+                'reason' => 'Payment not completed'
+            ]);
+        } catch (Exception $e) {
+            $this->cronLogger->error('Failed to cancel order', [
+                'order_id' => $order->getOrderId(),
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    private function isBankTransferExpired($order): bool
+    {
+        $waitingPeriod = 24;
+
+        $orderDate = strtotime($order->getCreatedAt());
+        $expirationTime = $orderDate + ($waitingPeriod * 3600);
+
+        return time() > $expirationTime;
+    }
+
+    private function isOrderTooOld($order, $maxAgeHours = 72): bool
+    {
+        $orderDate = strtotime($order->getCreatedAt());
+        $expirationTime = $orderDate + ($maxAgeHours * 3600);
+        return time() > $expirationTime;
+    }
+
+    public function releaseStock($magentoOrder)
+    {
+        try {
+            foreach ($magentoOrder->getAllItems() as $item) {
+                $product = $item->getProduct();
+                $stockItem = $product->getExtensionAttributes()->getStockItem();
+
+                $stockItem->setQtyIncrements($stockItem->getQtyIncrements() + $item->getQtyOrdered());
+                $stockItem->save();
+            }
+        } catch (Exception $e) {
+            $this->cronLogger->error("Failed to release stock", [
+                'order_id' => $magentoOrder->getEntityId(),
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
 
 }
