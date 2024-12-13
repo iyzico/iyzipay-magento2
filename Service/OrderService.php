@@ -121,6 +121,7 @@ class OrderService
             $order->setState("processing")->setStatus("processing");
             $order->addCommentToStatusHistory(__("SUCCESS"));
             $this->orderJobService->setOrderJobStatus($orderId, "processing");
+            $order->setCanSendNewEmailFlag(true);
         }
 
         if ($response->getInstallment() > 1) {
@@ -131,7 +132,6 @@ class OrderService
             $order->addCommentToStatusHistory("Payment ID: ".$response->getPaymentId()." - Conversation ID:".$response->getConversationId());
         }
 
-        $order->setCanSendNewEmailFlag(true);
         $this->orderRepository->save($order);
     }
 
