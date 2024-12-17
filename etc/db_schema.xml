@@ -12,6 +12,8 @@
         <column xsi:type="varchar" name="iyzico_conversation_id" nullable="false" length="255"
                 comment="iyzico Payment Conversation Id"/>
         <column xsi:type="varchar" name="status" nullable="false" length="255" comment="Status"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP"
+                comment="Created At"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="id"/>
         </constraint>
@@ -29,7 +31,8 @@
         </index>
     </table>
     <table name="iyzico_card" resource="default" engine="innodb" comment="iyzico Card">
-        <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" identity="true" comment="Id"/>
+        <column xsi:type="int" name="iyzico_card_id" padding="10" unsigned="true" nullable="false" identity="true"
+                comment="Id"/>
         <column xsi:type="int" name="customer_id" padding="11" unsigned="false" nullable="false" identity="false"
                 comment="Magento Customer Id"/>
         <column xsi:type="varchar" name="card_user_key" nullable="false" length="255" comment="iyzico Card User Key"/>
@@ -37,7 +40,7 @@
         <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP"
                 comment="Created At"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
-            <column name="id"/>
+            <column name="iyzico_card_id"/>
         </constraint>
     </table>
 </schema>
