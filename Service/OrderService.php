@@ -62,6 +62,8 @@ class OrderService
         $order->addCommentToStatusHistory($comment);
         $order->getPayment()->setMethod('iyzipay');
         $order->setCanSendNewEmailFlag(false);
+        $order->setEmailSent(false);
+        $order->setSendEmail(false);
 
         $this->orderRepository->save($order);
 
@@ -122,6 +124,8 @@ class OrderService
             $order->addCommentToStatusHistory(__("SUCCESS"));
             $this->orderJobService->setOrderJobStatus($orderId, "processing");
             $order->setCanSendNewEmailFlag(true);
+            $order->setEmailSent(true);
+            $order->setSendEmail(true);
         }
 
         if ($response->getInstallment() > 1) {
