@@ -16,7 +16,7 @@ class IyziCard extends AbstractDb
      */
     protected function _construct(): void
     {
-        $this->_init('iyzico_card', 'id');
+        $this->_init('iyzico_card', 'iyzico_card_id');
         $this->_useIsObjectNew = true;
     }
 }
