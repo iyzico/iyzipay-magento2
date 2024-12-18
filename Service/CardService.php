@@ -46,7 +46,7 @@ class CardService
                 $customerCardUserKey = $iyziCard->getData('card_user_key');
 
                 if ($response->getCardUserKey() != $customerCardUserKey) {
-                    if ($iyziCard->getId()) {
+                    if ($iyziCard->getIyzicoCardId()) {
                         $iyziCard->setCardUserKey($response->getCardUserKey());
                     } else {
                         $iyziCard = $this->iyziCardFactory->create();
