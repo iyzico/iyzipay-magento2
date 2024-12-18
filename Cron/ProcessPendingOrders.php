@@ -32,6 +32,7 @@ use Iyzico\Iyzipay\Library\Request\RetrieveCheckoutFormRequest;
 use Iyzico\Iyzipay\Logger\IyziCronLogger;
 use Iyzico\Iyzipay\Model\ResourceModel\IyziOrderJob\Collection;
 use Iyzico\Iyzipay\Model\ResourceModel\IyziOrderJob\CollectionFactory;
+use Iyzico\Iyzipay\Service\OrderService;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Api\OrderRepositoryInterface;
@@ -50,7 +51,8 @@ class ProcessPendingOrders
         protected readonly StoreManagerInterface $storeManager,
         protected readonly OrderRepositoryInterface $orderRepository,
         protected readonly CollectionFactory $collectionFactory,
-        protected readonly ConfigHelper $configHelper
+        protected readonly ConfigHelper $configHelper,
+        protected readonly OrderService $orderService
     ) {
     }
 
@@ -61,15 +63,19 @@ class ProcessPendingOrders
 
             $page = 1;
             $processedCount = 0;
-            $ordersToDelete = [];
             $totalPages = $this->getTotalPages();
+
+            $ordersToDelete = $this->getOrdersToDelete($page);
+            if (!empty($ordersToDelete)) {
+                $this->deleteProcessedOrders($ordersToDelete);
+            }
 
             while ($page <= $totalPages) {
                 $orders = $this->getPageOfOrders($page);
                 $ordersCount = count($orders);
 
                 if ($ordersCount > 0) {
-                    $this->processOrders($orders, $ordersToDelete);
+                    $this->processOrders($orders);
                     $processedCount += $ordersCount;
                 }
 
@@ -80,10 +86,6 @@ class ProcessPendingOrders
                 ]);
 
                 $page++;
-            }
-
-            if (!empty($ordersToDelete)) {
-                $this->deleteProcessedOrders($ordersToDelete);
             }
 
             $this->cronLogger->info('iyzico cron job completed', ['total_processed' => $processedCount]);
@@ -102,11 +104,24 @@ class ProcessPendingOrders
      */
     private function getTotalPages(): float
     {
-        $totalItems = $this->collection
-            ->addFieldToFilter('status', ['in' => ['pending_payment', 'received']])
-            ->getSize();
+        $totalItems = $this->collection->getSize();
 
         return ceil($totalItems / self::PAGE_SIZE);
+    }
+
+
+    /**
+     * Summary of getOrdersToDelete
+     * @return float
+     */
+    private function getOrdersToDelete($page): array
+    {
+        $this->collection
+            ->addFieldToFilter('status', ['in' => ['processing', 'canceled']])
+            ->setPageSize(self::PAGE_SIZE)
+            ->setCurPage($page);
+
+        return $this->collection->getAllIds();
     }
 
     private function getPageOfOrders($page): array
@@ -121,14 +136,13 @@ class ProcessPendingOrders
         return $this->collection->getItems();
     }
 
-    private function processOrders($orders, &$ordersToDelete): void
+    private function processOrders($orders): void
     {
         $this->cronLogger->info('Processing orders', ['count' => count($orders)]);
         $promises = [];
         $client = new Client();
 
         foreach ($orders as $order) {
-            // Check payment expiration and order status before processing
             if (!$this->shouldProcessOrder($order)) {
                 continue;
             }
@@ -156,12 +170,10 @@ class ProcessPendingOrders
             }
 
             $order = $this->updateOrder($order, $responseBody);
-            $order = $this->updateLastControlDate($order);
             $order->save();
 
             if ($this->shouldCancelOrder($order, $responseBody)) {
                 $this->cancelOrder($order);
-                $ordersToDelete[] = $order->getId();
             }
         }
     }
@@ -211,8 +223,8 @@ class ProcessPendingOrders
 
     private function updateOrder($order, $responseBody): mixed
     {
-        $paymentStatus = $responseBody->getPaymentStatus() ?? '';
-        $status = $responseBody->getStatus() ?? '';
+        $paymentStatus = $responseBody->paymentStatus ?? '';
+        $status = $responseBody->status ?? '';
 
         $mapping = $this->mapping($paymentStatus, $status);
 
@@ -247,7 +259,7 @@ class ProcessPendingOrders
 
     private function mapping(string $paymentStatus, string $status): array
     {
-        if ($status == "failure")
+        if ($status == "failure" && $paymentStatus != '')
             return ['state' => "canceled", 'status' => "canceled", 'comment' => __("CANCELLED_ORDER")];
 
         if ($paymentStatus == 'INIT_THREEDS' && $status == 'success')
@@ -263,24 +275,6 @@ class ProcessPendingOrders
             return ['state' => "pending_payment", 'status' => "pending_payment", 'comment' => __("PENDING_CREDIT")];
 
         return [];
-    }
-
-    private function updateLastControlDate($order)
-    {
-        $this->cronLogger->info('Updating last control date', ['order_id' => $order->getOrderId()]);
-
-        $oldLastControlledAt = $order->getLastControlledAt();
-        $newLastControlledAt = date('Y-m-d H:i:s');
-
-        $order->setLastControlledAt($newLastControlledAt);
-
-        $this->cronLogger->info('Last control date updated', [
-            'order_id' => $order->getOrderId(),
-            'old_last_control_date' => $oldLastControlledAt,
-            'new_last_control_date' => $newLastControlledAt
-        ]);
-
-        return $order;
     }
 
     private function deleteProcessedOrders($orderIds): void
@@ -315,11 +309,11 @@ class ProcessPendingOrders
 
     private function shouldCancelOrder($order, $responseBody): bool
     {
-        $paymentStatus = $responseBody->getPaymentStatus() ?? '';
-        $status = $responseBody->getStatus() ?? '';
+        $paymentStatus = $responseBody->paymentStatus ?? '';
+        $status = $responseBody->status ?? '';
 
         $cancelConditions = [
-            ($status == 'failure'),
+            ($status == 'failure' && $paymentStatus != ''),
             ($paymentStatus == 'INIT_BANK_TRANSFER' && $this->isBankTransferExpired($order)),
             ($paymentStatus == 'PENDING_CREDIT' && $this->isOrderTooOld($order))
         ];
@@ -331,7 +325,7 @@ class ProcessPendingOrders
     {
         try {
             $magentoOrder = $this->orderRepository->get($order->getOrderId());
-            $this->releaseStock($magentoOrder);
+            $this->orderService->releaseStock($magentoOrder);
 
             $magentoOrder->setState("canceled");
             $magentoOrder->setStatus("canceled");
@@ -367,24 +361,5 @@ class ProcessPendingOrders
         $expirationTime = $orderDate + ($maxAgeHours * 3600);
         return time() > $expirationTime;
     }
-
-    public function releaseStock($magentoOrder)
-    {
-        try {
-            foreach ($magentoOrder->getAllItems() as $item) {
-                $product = $item->getProduct();
-                $stockItem = $product->getExtensionAttributes()->getStockItem();
-
-                $stockItem->setQtyIncrements($stockItem->getQtyIncrements() + $item->getQtyOrdered());
-                $stockItem->save();
-            }
-        } catch (Exception $e) {
-            $this->cronLogger->error("Failed to release stock", [
-                'order_id' => $magentoOrder->getEntityId(),
-                'error' => $e->getMessage()
-            ]);
-        }
-    }
-
 
 }
