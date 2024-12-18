@@ -34,6 +34,13 @@
         </arguments>
     </type>
 
+    <!-- IyzipayOrderIdentity -->
+    <type name="Magento\Sales\Model\Order\Email\Container\OrderIdentity">
+        <plugin name="iyzipay_order_email_disable"
+                type="Iyzico\Iyzipay\Plugin\Order\Email\Container\IyzipayOrderIdentity"
+                sortOrder="1"/>
+    </type>
+
     <!-- IyzipaySubtotal -->
     <preference for="Magento\Sales\Model\Order\Creditmemo\Total\Subtotal"
                 type="Iyzico\Iyzipay\Model\Order\Creditmemo\Total\Subtotal"/>
