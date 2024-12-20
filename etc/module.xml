@@ -8,5 +8,9 @@
         <module name="Magento_OfflinePayments"/>
         <module name="Magento_Payment"/>
         <module name="Magento_Quote"/>
+        <module name="Magento_InventoryApi"/>
+        <module name="Magento_InventoryReservations"/>
+        <module name="Magento_InventoryReservationsApi"/>
+        <module name="Magento_InventorySales"/>
     </sequence>
 </config>
