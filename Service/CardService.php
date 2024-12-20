@@ -28,7 +28,6 @@ use Iyzico\Iyzipay\Logger\IyziErrorLogger;
 use Iyzico\Iyzipay\Model\IyziCardFactory;
 use Iyzico\Iyzipay\Model\ResourceModel\IyziCard as IyziCardResource;
 use Iyzico\Iyzipay\Model\ResourceModel\IyziCard\CollectionFactory as IyziCardCollectionFactory;
-use Magento\Framework\Exception\AlreadyExistsException;
 use Throwable;
 
 readonly class CardService
@@ -48,10 +47,8 @@ readonly class CardService
      * This function is responsible for saving the user card.
      *
      * @param  CheckoutForm  $response
-     * @param  string  $apiKey
      * @param  int|null  $customerId
      * @return void
-     * @throws AlreadyExistsException
      */
     public function setUserCard(CheckoutForm $response, int|null $customerId): void
     {
