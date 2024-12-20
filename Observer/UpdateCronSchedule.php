@@ -22,25 +22,30 @@
 
 namespace Iyzico\Iyzipay\Observer;
 
-use Iyzico\Iyzipay\Logger\IyziCronLogger;
-use Magento\Framework\Event\ObserverInterface;
 use Iyzico\Iyzipay\Helper\CronHelper;
+use Iyzico\Iyzipay\Logger\IyziCronLogger;
 use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
 
 class UpdateCronSchedule implements ObserverInterface
 {
-    private $cronHelper;
-    private $logger;
-
-    public function __construct(CronHelper $cronHelper, IyziCronLogger $logger)
-    {
-        $this->cronHelper = $cronHelper;
-        $this->logger = $logger;
+    public function __construct(
+        protected readonly CronHelper $cronHelper,
+        protected readonly IyziCronLogger $logger
+    ) {
     }
 
-    public function execute(Observer $observer)
+    /**
+     * Execute observer
+     *
+     * This method is called when the event specified in the events.xml file is triggered.
+     *
+     * @param  Observer  $observer
+     * @return void
+     */
+    public function execute(Observer $observer): void
     {
         $newSchedule = $this->cronHelper->getCronSchedule();
-        $this->logger->info('Cron schedule updated: ' . $newSchedule);
+        $this->logger->info('Cron schedule updated: '.$newSchedule);
     }
 }

@@ -22,40 +22,25 @@
 namespace Iyzico\Iyzipay\Observer;
 
 use Magento\Framework\Event\Observer;
-use Magento\Framework\ObjectManager\ObjectManager;
-use Magento\Sales\Model\OrderFactory;
-use Magento\Checkout\Model\Session;
+use Magento\Framework\Event\ObserverInterface;
 
-class SalesOrderInvoiceSaveBefore implements \Magento\Framework\Event\ObserverInterface
+class SalesOrderInvoiceSaveBefore implements ObserverInterface
 {
-    /**
-     * @var \Magento\Framework\ObjectManager\ObjectManager
-     */
-    protected $_objectManager;
-    protected $_orderFactory;
-    protected $_checkoutSession;
-
-
-    public function __construct(Session $checkoutSession, OrderFactory $orderFactory, ObjectManager $objectManager)
-    {
-        $this->_objectManager = $objectManager;
-        $this->_orderFactory = $orderFactory;
-        $this->_checkoutSession = $checkoutSession;
-    }
 
     /**
-     * @param Observer $observer
+     * Execute observer
+     *
+     * This method is called when the event specified in the events.xml file is triggered.
+     *
+     * @param  Observer  $observer
      * @return void
      */
-    public function execute(Observer $observer)
+    public function execute(Observer $observer): void
     {
-
-
         $invoice = $observer->getEvent()->getInvoice();
         $order = $invoice->getOrder();
 
         if ($order->getInstallmentFee()) {
-
             $total = $order->getGrandTotal();
             $subTotal = $order->getSubTotal();
 
@@ -69,6 +54,5 @@ class SalesOrderInvoiceSaveBefore implements \Magento\Framework\Event\ObserverIn
             $invoice->setBaseSubTotalInclTax($subTotal);
             $invoice->addComment('Invoice Created.');
         }
-
     }
 }

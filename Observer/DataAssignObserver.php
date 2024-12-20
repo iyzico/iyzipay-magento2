@@ -31,10 +31,10 @@ class DataAssignObserver implements ObserverInterface
      *
      * This method is called when the event specified in the events.xml file is triggered.
      *
-     * @param Observer $observer
+     * @param  Observer  $observer
      * @return void
      */
-    public function execute(Observer $observer)
+    public function execute(Observer $observer): void
     {
         $order = $observer->getEvent()->getOrder();
 
@@ -42,7 +42,6 @@ class DataAssignObserver implements ObserverInterface
         $installmentCount = $order->getInstallmentCount();
 
         if (isset($installmentCount) && $installmentCount > 1 && $paymentMethod == 'iyzipay') {
-
             $getInstallmentFee = $order->getInstallmentFee();
             $installmentCount = $order->getInstallmentCount();
             $grandTotalWithFee = $order->getGrandTotal();
@@ -66,7 +65,8 @@ class DataAssignObserver implements ObserverInterface
             $payment->setBaseAmountPaid($grandTotalWithFee);
             $payment->setAmountPaid($grandTotalWithFee);
 
-            $installmentInfo = sprintf(__('Installment Info: %d Installment / %s %s'), $installmentCount, $getInstallmentFee, $currency);
+            $installmentInfo = sprintf(__('Installment Info: %d Installment / %s %s'), $installmentCount,
+                $getInstallmentFee, $currency);
 
             $order->addStatusHistoryComment($installmentInfo)->setIsVisibleOnFront(true);
         }
