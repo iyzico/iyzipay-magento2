@@ -6,9 +6,6 @@ use Exception;
 use Iyzico\Iyzipay\Api\WebhookInterface;
 use Iyzico\Iyzipay\Helper\ConfigHelper;
 use Iyzico\Iyzipay\Helper\UtilityHelper;
-use Iyzico\Iyzipay\Library\Model\CheckoutForm;
-use Iyzico\Iyzipay\Library\Options;
-use Iyzico\Iyzipay\Library\Request\RetrieveCheckoutFormRequest;
 use Iyzico\Iyzipay\Logger\IyziWebhookLogger;
 use Iyzico\Iyzipay\Model\Data\WebhookData;
 use Iyzico\Iyzipay\Service\OrderJobService;
@@ -85,6 +82,12 @@ class Webhook implements WebhookInterface
 
         $json = json_decode($content, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
+            $this->iyziWebhookLogger->error(
+                sprintf(
+                    'Invalid JSON: %s',
+                    json_last_error_msg()
+                )
+            );
             throw new LocalizedException(
                 __('Invalid JSON: %1', json_last_error_msg())
             );
@@ -92,41 +95,49 @@ class Webhook implements WebhookInterface
 
         $paymentConversationId = $json['paymentConversationId'] ?? null;
         if (empty($paymentConversationId)) {
+            $this->iyziWebhookLogger->error(sprintf('paymentConversationId is missing or empty, content: %s', $content));
             throw new LocalizedException(__('paymentConversationId is missing or empty'));
         }
 
         $merchantId = $json['merchantId'] ?? null;
         if (empty($merchantId)) {
+            $this->iyziWebhookLogger->error(sprintf('merchantId is missing or empty, content: %s', $content));
             throw new LocalizedException(__('merchantId is missing or empty'));
         }
 
         $token = $json['token'] ?? null;
         if (empty($token)) {
+            $this->iyziWebhookLogger->error(sprintf('token is missing or empty, content: %s', $content));
             throw new LocalizedException(__('token is missing or empty'));
         }
 
         $status = $json['status'] ?? null;
         if (empty($status)) {
+            $this->iyziWebhookLogger->error(sprintf('status is missing or empty, content: %s', $content));
             throw new LocalizedException(__('status is missing or empty'));
         }
 
         $iyziReferenceCode = $json['iyziReferenceCode'] ?? null;
         if (empty($iyziReferenceCode)) {
+            $this->iyziWebhookLogger->error(sprintf('iyziReferenceCode is missing or empty, content: %s', $content));
             throw new LocalizedException(__('iyziReferenceCode is missing or empty'));
         }
 
         $iyziEventType = $json['iyziEventType'] ?? null;
         if (empty($iyziEventType)) {
+            $this->iyziWebhookLogger->error(sprintf('iyziEventType is missing or empty, content: %s', $content));
             throw new LocalizedException(__('iyziEventType is missing or empty'));
         }
 
         $iyziEventTime = $json['iyziEventTime'] ?? null;
         if (empty($iyziEventTime)) {
+            $this->iyziWebhookLogger->error(sprintf('iyziEventTime is missing or empty, content: %s', $content));
             throw new LocalizedException(__('iyziEventTime is missing or empty'));
         }
 
         $iyziPaymentId = $json['iyziPaymentId'] ?? null;
         if (empty($iyziPaymentId)) {
+            $this->iyziWebhookLogger->error(sprintf('iyziPaymentId is missing or empty, content: %s', $content));
             throw new LocalizedException(__('iyziPaymentId is missing or empty'));
         }
 
@@ -142,9 +153,12 @@ class Webhook implements WebhookInterface
         return $webhookData;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function generateKey(string $secretKey, WebhookData $webhookData): string
     {
-        return $secretKey . $webhookData->getIyziEventType() . $webhookData->getIyziPaymentId() . $webhookData->getPaymentConversationId() . $webhookData->getStatus();
+        return $secretKey.$webhookData->getIyziEventType().$webhookData->getIyziPaymentId().$webhookData->getPaymentConversationId().$webhookData->getStatus();
     }
 
     /**
@@ -164,52 +178,9 @@ class Webhook implements WebhookInterface
     {
         $token = $webhookData->getToken();
         $conversationId = $webhookData->getPaymentConversationId();
-        $locale = $this->configHelper->getLocale();
-
-        $apiKey = $this->configHelper->getApiKey();
-        $secretKey = $this->configHelper->getSecretKey();
-        $baseUrl = $this->configHelper->getBaseUrl();
-
-        $request = new RetrieveCheckoutFormRequest();
-        $request->setLocale($locale);
-        $request->setConversationId($conversationId);
-        $request->setToken($token);
-
-        $options = new Options();
-        $options->setBaseUrl($baseUrl);
-        $options->setApiKey($apiKey);
-        $options->setSecretKey($secretKey);
-
-        $response = CheckoutForm::retrieve($request, $options);
-
-        $responsePaymentStatus = $response->getPaymentStatus();
-        $responsePaymentId = $response->getPaymentId();
-        $responseCurrency = $response->getCurrency();
-        $responseBasketId = $response->getBasketId();
-        $responseConversationId = $response->getConversationId();
-        $responsePaidPrice = $response->getPaidPrice();
-        $responsePrice = $response->getPrice();
-        $responseToken = $response->getToken();
-        $responseSignature = $response->getSignature();
-
-        $calculateSignature = $this->utilityHelper->calculateHmacSHA256Signature([
-            $responsePaymentStatus,
-            $responsePaymentId,
-            $responseCurrency,
-            $responseBasketId,
-            $responseConversationId,
-            $responsePaidPrice,
-            $responsePrice,
-            $responseToken
-        ], $secretKey);
-
-        if ($responseSignature !== $calculateSignature) {
-            throw new LocalizedException(__('Signature mismatch'));
-        }
-
+        $response = $this->orderService->retrieveAndValidateCheckoutForm($token, $conversationId);
         $orderId = $this->orderJobService->findParametersByToken($token, 'order_id');
-
-        $this->orderService->updateOrderPaymentStatus($orderId, $response, true);
+        $this->orderService->updateOrderPaymentStatus($orderId, $response, 'yes');
     }
 
     /**
@@ -225,7 +196,7 @@ class Webhook implements WebhookInterface
         $orderPaymentRepository = $objectManager->create(OrderPaymentRepositoryInterface::class);
 
         $searchCriteria = $searchCriteriaBuilder
-            ->addFilter('last_trans_id', $paymentId, 'eq')
+            ->addFilter('last_trans_id', $paymentId)
             ->create();
 
         $paymentList = $orderPaymentRepository->getList($searchCriteria);
@@ -237,7 +208,7 @@ class Webhook implements WebhookInterface
         $payment = $paymentList->getItems()[0];
         $orderId = $payment->getParentId();
 
-        $this->orderService->updateOrderPaymentStatus($orderId, $webhookData);
+        $this->orderService->updateOrderPaymentStatus($orderId, $webhookData, 'v3');
     }
 
     /**
