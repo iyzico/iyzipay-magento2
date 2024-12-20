@@ -41,7 +41,6 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Quote\Api\CartManagementInterface;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Quote\Model\Quote;
-use Exception;
 
 
 class IyzipayRequest implements ActionInterface
@@ -122,7 +121,7 @@ class IyzipayRequest implements ActionInterface
             $request->setBillingAddress($billingAddress);
             $request->setBasketItems($basketItems);
             $request->setCardUserKey($cardUserKey);
-            $request->setGoBackUrl($this->configHelper->getGoBackUrl());
+            $request->setGoBackUrl($this->configHelper->getGoBackUrl($basketId));
 
             // Create the options
             $options = new Options();
@@ -163,7 +162,7 @@ class IyzipayRequest implements ActionInterface
                 'message' => "Signature Mismatch",
                 'code' => "0"
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return $this->resultJsonFactory->create()->setData([
                 'success' => false,
                 'message' => $e->getMessage(),
