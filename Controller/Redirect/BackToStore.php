@@ -22,6 +22,7 @@
 
 namespace Iyzico\Iyzipay\Controller\Redirect;
 
+use Iyzico\Iyzipay\Service\OneTimeUrlService;
 use Iyzico\Iyzipay\Service\OrderJobService;
 use Iyzico\Iyzipay\Service\OrderService;
 use Magento\Framework\App\Action\HttpGetActionInterface;
@@ -40,7 +41,8 @@ class BackToStore implements HttpGetActionInterface
         protected readonly OrderRepositoryInterface $orderRepository,
         protected readonly RequestInterface $request,
         protected readonly OrderService $orderService,
-        protected readonly OrderJobService $orderJobService
+        protected readonly OrderJobService $orderJobService,
+        protected readonly OneTimeUrlService $oneTimeUrlService
     ) {
     }
 
@@ -52,10 +54,11 @@ class BackToStore implements HttpGetActionInterface
      */
     public function execute(): Redirect
     {
-        $quoteId = $this->request->getParam('quote_id');
+        $token = $this->request->getParam('token');
+        $quoteId = $this->oneTimeUrlService->validateAndGetBasketId($token);
+
         if ($quoteId) {
             $quote = $this->quoteRepository->get($quoteId);
-
             $orderId = $quote->getReservedOrderId();
             if ($orderId) {
                 $order = $this->orderRepository->get($orderId);
@@ -65,10 +68,10 @@ class BackToStore implements HttpGetActionInterface
                 $this->orderJobService->removeIyziOrderJobTable($orderId);
 
                 $this->orderRepository->save($order);
-            }
 
-            $quote->setIsActive(1);
-            $this->quoteRepository->save($quote);
+                $quote->setIsActive(1);
+                $this->quoteRepository->save($quote);
+            }
         }
 
         $redirect = $this->redirectFactory->create();

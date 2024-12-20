@@ -29,6 +29,7 @@ use Iyzico\Iyzipay\Library\Model\CheckoutFormInitialize;
 use Iyzico\Iyzipay\Library\Options;
 use Iyzico\Iyzipay\Library\Request\CreateCheckoutFormInitializeRequest;
 use Iyzico\Iyzipay\Model\IyziCardFactory;
+use Iyzico\Iyzipay\Service\OneTimeUrlService;
 use Iyzico\Iyzipay\Service\OrderJobService;
 use Iyzico\Iyzipay\Service\OrderService;
 use Magento\Checkout\Model\Session as CheckoutSession;
@@ -58,7 +59,8 @@ class IyzipayRequest implements ActionInterface
         protected readonly OrderJobService $orderJobService,
         protected readonly OrderService $orderService,
         protected readonly CartManagementInterface $cartManagement,
-        protected readonly CartRepositoryInterface $cartRepository
+        protected readonly CartRepositoryInterface $cartRepository,
+        protected readonly OneTimeUrlService $oneTimeUrlService
     ) {
     }
 
@@ -121,7 +123,7 @@ class IyzipayRequest implements ActionInterface
             $request->setBillingAddress($billingAddress);
             $request->setBasketItems($basketItems);
             $request->setCardUserKey($cardUserKey);
-            $request->setGoBackUrl($this->configHelper->getGoBackUrl($basketId));
+            $request->setGoBackUrl($this->oneTimeUrlService->createOneTimeUrl($basketId));
 
             // Create the options
             $options = new Options();

@@ -20,7 +20,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 namespace Iyzico\Iyzipay\Helper;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
@@ -186,9 +185,9 @@ readonly class ConfigHelper
      *
      * @throws NoSuchEntityException
      */
-    public function getGoBackUrl(string $basketId): string
+    public function getGoBackUrl(string $token): string
     {
-        return $this->storeManager->getStore()->getBaseUrl()."iyzico/redirect/backtostore?quote_id=".$basketId;
+        return $this->storeManager->getStore()->getBaseUrl()."iyzico/redirect/backtostore?token=".$token;
     }
 
     /**
