@@ -20,7 +20,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 namespace Iyzico\Iyzipay\Helper;
 
 use Magento\Framework\Exception\LocalizedException;
