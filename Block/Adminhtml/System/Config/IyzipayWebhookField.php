@@ -22,16 +22,15 @@
 
 namespace Iyzico\Iyzipay\Block\Adminhtml\System\Config;
 
+use Iyzico\Iyzipay\Helper\ConfigHelper;
 use Iyzico\Iyzipay\Logger\IyziWebhookLogger;
+use Magento\Backend\Block\Template\Context;
 use Magento\Config\Block\System\Config\Form\Field;
 use Magento\Framework\App\ObjectManager;
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Store\Model\StoreManagerInterface;
-use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\Data\Form\Element\AbstractElement;
-use Magento\Backend\Block\Template\Context;
-use Magento\Framework\View\Helper\SecureHtmlRenderer;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\View\Helper\SecureHtmlRenderer;
 
 /**
  * Class GetWebhookUrlField
@@ -43,21 +42,15 @@ use Magento\Framework\Exception\NoSuchEntityException;
  */
 class IyzipayWebhookField extends Field
 {
-    protected ScopeConfigInterface $scopeConfig;
-    protected StoreManagerInterface $storeManager;
-    protected IyziWebhookLogger $logger;
+    private SecureHtmlRenderer $secureRenderer;
 
     public function __construct(
-        Context $context,
-        StoreManagerInterface $storeManager,
-        ScopeConfigInterface $scopeConfig,
-        IyziWebhookLogger $logger,
+        protected Context $context,
+        protected ConfigHelper $configHelper,
+        protected IyziWebhookLogger $logger,
         array $data = [],
         ?SecureHtmlRenderer $secureRenderer = null
     ) {
-        $this->storeManager = $storeManager;
-        $this->scopeConfig = $scopeConfig;
-        $this->logger = $logger;
         parent::__construct($context, $data);
         $this->secureRenderer = $secureRenderer ?? ObjectManager::getInstance()->get(SecureHtmlRenderer::class);
     }
@@ -65,39 +58,33 @@ class IyzipayWebhookField extends Field
     /**
      * Retrieve the webhook URL and submit button HTML
      *
-     * @param AbstractElement $element
+     * @param  AbstractElement  $element
      * @return string
-     * @throws NoSuchEntityException
+     * @throws NoSuchEntityException|LocalizedException
      */
     protected function _getElementHtml(AbstractElement $element): string
     {
-        $websiteId = $this->storeManager->getWebsite()->getId();
-        $webhookUrlKey = $this->scopeConfig->getValue(
-            'payment/iyzipay/webhook_url_key',
-            ScopeInterface::SCOPE_WEBSITES,
-            $websiteId
-        );
+        $webhookUrlKey = $this->configHelper->getWebhookUrlKey();
+        $websiteId = $this->getRequest()->getParam('website');
+        $baseUrl = $this->configHelper->getWebsiteBaseUrl($websiteId);
 
         if ($webhookUrlKey) {
-            return $this->_storeManager->getStore()->getBaseUrl() . 'rest/V1/iyzico/webhook/' . $webhookUrlKey . '<br>' . $this->getWebhookSubmitButtonHtml();
+            return $baseUrl.'rest/V1/iyzico/webhook/'.$webhookUrlKey.'<br>'.$this->getWebhookSubmitButtonHtml();
         } else {
             return 'Clear cookies and then push the "Save Config" button';
         }
     }
 
+
     /**
      * Generate webhook submit button HTML
      *
      * @return string
+     * @throws LocalizedException
      */
     public function getWebhookSubmitButtonHtml(): string
     {
-        $websiteId = $this->storeManager->getWebsite()->getId();
-        $isWebhookButtonActive = $this->scopeConfig->getValue(
-            'payment/iyzipay/webhook_url_key_active',
-            ScopeInterface::SCOPE_WEBSITES,
-            $websiteId
-        );
+        $isWebhookButtonActive = $this->configHelper->getWebhookUrlKeyActive();
 
         if ($isWebhookButtonActive == 2) {
             $htmlButton = '<form action="#" method="post">
@@ -117,15 +104,17 @@ class IyzipayWebhookField extends Field
     }
 
     /**
-     * Deactivate the webhook button
+     * Deactivate Webhook Button
+     *
+     * @return void
      */
-    protected function deactivateWebhookButton()
+    protected function deactivateWebhookButton(): void
     {
         $objectManager = ObjectManager::getInstance();
         $resource = $objectManager->get('Magento\Framework\App\ResourceConnection');
         $connection = $resource->getConnection();
         $tableName = $resource->getTableName('core_config_data');
-        $sql = "UPDATE " . $tableName . " SET value = '0' WHERE scope = 'websites' AND path = 'payment/iyzipay/webhook_url_key_active'";
+        $sql = "UPDATE ".$tableName." SET value = '0' WHERE scope = 'websites' AND path = 'payment/iyzipay/webhook_url_key_active'";
         $connection->query($sql);
     }
 }
