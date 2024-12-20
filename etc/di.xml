@@ -15,7 +15,8 @@
     <!-- Configuration reader -->
     <type name="Magento\Payment\Gateway\Config\Config">
         <arguments>
-            <argument name="methodCode" xsi:type="const">Iyzico\Iyzipay\Model\Ui\ConfigProvider::CODE
+            <argument name="methodCode" xsi:type="const">
+                Iyzico\Iyzipay\Model\Ui\ConfigProvider::CODE
             </argument>
         </arguments>
     </type>
@@ -32,13 +33,6 @@
         <arguments>
             <argument name="configInterface" xsi:type="object">Magento\Payment\Gateway\Config\Config</argument>
         </arguments>
-    </type>
-
-    <!-- IyzipayOrderIdentity -->
-    <type name="Magento\Sales\Model\Order\Email\Container\OrderIdentity">
-        <plugin name="iyzipay_order_email_disable"
-                type="Iyzico\Iyzipay\Plugin\Order\Email\Container\IyzipayOrderIdentity"
-                sortOrder="1"/>
     </type>
 
     <!-- IyzipaySubtotal -->
