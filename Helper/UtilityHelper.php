@@ -2,8 +2,10 @@
 
 namespace Iyzico\Iyzipay\Helper;
 
+use Iyzico\Iyzipay\Library\Model\CheckoutForm;
 use Iyzico\Iyzipay\Model\IyziCardFactory;
 use Magento\Customer\Model\Session as CustomerSession;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\Quote;
 
 class UtilityHelper
@@ -53,23 +55,6 @@ class UtilityHelper
     }
 
     /**
-     * Calculate Subtotal Price
-     *
-     * @param  $order
-     * @return string
-     */
-    public function calculateSubTotalPrice($order): string
-    {
-        $price = 0;
-        foreach ($order->getAllVisibleItems() as $item) {
-            $price += round($item->getPrice(), 2);
-        }
-
-        $price += $order->getShippingAddress()->getShippingAmount() ?? 0;
-        return $this->parsePrice($price);
-    }
-
-    /**
      * Ensure Cookies Same Site
      *
      * Sets SameSite=None; Secure on specified cookies.
@@ -107,10 +92,13 @@ class UtilityHelper
     /**
      * Apply Cookie Settings
      *
-     * @param  string  $name  Name of the cookie
-     * @param  string  $value  Value of the cookie
-     * @param  int  $expire  Expiration time
-     * @param  string  $domain  Domain for the cookie
+     * This function is responsible for applying the cookie settings.
+     *
+     * @param  string  $name
+     * @param  string  $value
+     * @param  int  $expire
+     * @param  string  $domain
+     *
      * @return void
      */
     private function applyCookieSettings(string $name, string $value, int $expire, string $domain): void
@@ -130,19 +118,9 @@ class UtilityHelper
     }
 
     /**
-     * Concatenate Strings
-     *
-     * @param  string  ...$address
-     * @return string
-     */
-    public function concatenateStrings(string ...$address): string
-    {
-        $address = array_map('trim', $address);
-        return implode(' ', $address);
-    }
-
-    /**
      * Validate String
+     *
+     * This function is responsible for validating the string.
      *
      * @param  mixed  $string
      * @return string
@@ -163,6 +141,8 @@ class UtilityHelper
     /**
      * Generate Conversation Id
      *
+     * This function is responsible for generating the conversation ID.
+     *
      * @param  int  $quoteId
      * @return string
      */
@@ -174,7 +154,9 @@ class UtilityHelper
     /**
      * Get Customer Id
      *
-     * @param  CustomerSession $customerSession
+     * This function is responsible for getting the customer ID.
+     *
+     * @param  CustomerSession  $customerSession
      * @return int|null
      */
     public function getCustomerId(CustomerSession $customerSession): ?int
@@ -205,9 +187,78 @@ class UtilityHelper
         return '';
     }
 
+    /**
+     * Get Locale Name
+     *
+     * This function is responsible for getting the locale name.
+     *
+     * @param $locale
+     * @return string
+     */
+    public function cutLocale($locale): string
+    {
+        $locale = explode('_', $locale);
+        return $locale[0];
+    }
+
+    /**
+     * Store Session Data
+     *
+     * This function is responsible for storing the session data.
+     *
+     * @param  Quote  $checkoutSession
+     * @param  CustomerSession  $customerSession
+     * @return void
+     */
+    public function storeSessionData(Quote $checkoutSession, CustomerSession $customerSession): void
+    {
+        $customerEmail = $checkoutSession->getBillingAddress()->getEmail();
+        $quoteId = $checkoutSession->getId();
+        $checkoutSession->setGuestQuoteId($quoteId);
+        $customerSession->setEmail($customerEmail);
+    }
+
+    /**
+     * Validate Signature
+     *
+     * This function is responsible for validating the signature.
+     *
+     * @param  CheckoutForm  $response
+     * @param  string  $secretKey
+     * @throws LocalizedException
+     */
+    public function validateSignature(CheckoutForm $response, string $secretKey): void
+    {
+        $responsePaymentStatus = $response->getPaymentStatus();
+        $responsePaymentId = $response->getPaymentId();
+        $responseCurrency = $response->getCurrency();
+        $responseBasketId = $response->getBasketId();
+        $responseConversationId = $response->getConversationId();
+        $responsePaidPrice = $response->getPaidPrice();
+        $responsePrice = $response->getPrice();
+        $responseToken = $response->getToken();
+        $responseSignature = $response->getSignature();
+
+        $calculateSignature = $this->calculateHmacSHA256Signature([
+            $responsePaymentStatus,
+            $responsePaymentId,
+            $responseCurrency,
+            $responseBasketId,
+            $responseConversationId,
+            $responsePaidPrice,
+            $responsePrice,
+            $responseToken
+        ], $secretKey);
+
+        if ($responseSignature !== $calculateSignature) {
+            throw new LocalizedException(__('Signature mismatch'));
+        }
+    }
 
     /**
      * Calculate HMAC SHA256 Signature
+     *
+     * This function is responsible for calculating the HMAC SHA256 signature.
      *
      * @param  array  $params
      * @param  string  $secretKey
@@ -222,35 +273,130 @@ class UtilityHelper
     }
 
     /**
-     * Get Locale Name
+     * Validate Conversation ID
      *
-     * @param $locale
-     * @return string
+     * This function is responsible for validating the conversation ID.
+     *
+     * @param  string  $conversationId
+     * @param  string  $responseConversationId
+     * @return bool
      */
-    public function cutLocale($locale): string
+    public function validateConversationId(string $conversationId, string $responseConversationId): bool
     {
-
-        $locale = explode('_', $locale);
-        return $locale[0];
+        if ($conversationId !== $responseConversationId) {
+            return false;
+        }
+        return true;
     }
 
     /**
-     * Store Session Data
+     * Find Order By State And Status
      *
-     * This function is responsible for storing the session data.
+     * This function is responsible for finding the order by state and status.
      *
-     * @param  Quote  $checkoutSession
-     * @param  CustomerSession  $customerSession
-     * @return void
+     * @param  string|null  $responsePaymentStatus
+     * @param  string|null  $responseStatus
+     * @return array
      */
-    public function storeSessionData(
-        Quote $checkoutSession,
-        CustomerSession $customerSession
-    ): void {
-        $customerEmail = $checkoutSession->getBillingAddress()->getEmail();
-        $quoteId = $checkoutSession->getId();
-        $checkoutSession->setGuestQuoteId($quoteId);
-        $customerSession->setEmail($customerEmail);
+    public function findOrderByPaymentAndStatus(string|null $responsePaymentStatus, string|null $responseStatus): array
+    {
+        $ordersByPaymentAndStatus = [
+            'state' => '',
+            'status' => '',
+            'comment' => '',
+            'orderJobStatus' => ''
+        ];
+
+        $responsePaymentStatus = strtoupper($responsePaymentStatus ?? '');
+        $responseStatus = strtoupper($responseStatus ?? '');
+
+        if ($responsePaymentStatus == 'CREDIT_PAYMENT_INIT' && $responseStatus == 'INIT_CREDIT') {
+            $ordersByPaymentAndStatus['state'] = 'pending_payment';
+            $ordersByPaymentAndStatus['status'] = 'pending_payment';
+            $ordersByPaymentAndStatus['comment'] = __('PENDING_CREDIT');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'pending_payment';
+        }
+
+        if ($responsePaymentStatus == 'PENDING_CREDIT' && $responseStatus == 'SUCCESS') {
+            $ordersByPaymentAndStatus['state'] = 'pending_payment';
+            $ordersByPaymentAndStatus['status'] = 'pending_payment';
+            $ordersByPaymentAndStatus['comment'] = __('PENDING_CREDIT');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'pending_payment';
+        }
+
+        if ($responsePaymentStatus == 'CREDIT_PAYMENT_PENDING' && $responseStatus == 'PENDING_CREDIT') {
+            $ordersByPaymentAndStatus['state'] = 'pending_payment';
+            $ordersByPaymentAndStatus['status'] = 'pending_payment';
+            $ordersByPaymentAndStatus['comment'] = __('PENDING_CREDIT');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'pending_payment';
+        }
+
+        if ($responsePaymentStatus == 'CREDIT_PAYMENT_AUTH' && $responseStatus == 'SUCCESS') {
+            $ordersByPaymentAndStatus['state'] = 'processing';
+            $ordersByPaymentAndStatus['status'] = 'processing';
+            $ordersByPaymentAndStatus['comment'] = __('SUCCESS');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'pending_payment';
+        }
+
+        if ($responsePaymentStatus == 'CREDIT_PAYMENT_AUTH' && $responseStatus == 'FAILURE') {
+            $ordersByPaymentAndStatus['state'] = 'canceled';
+            $ordersByPaymentAndStatus['status'] = 'canceled';
+            $ordersByPaymentAndStatus['comment'] = __('FAILURE');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'canceled';
+        }
+
+        if ($responsePaymentStatus == 'INIT_BANK_TRANSFER' && $responseStatus == 'SUCCESS') {
+            $ordersByPaymentAndStatus['state'] = 'pending_payment';
+            $ordersByPaymentAndStatus['status'] = 'pending_payment';
+            $ordersByPaymentAndStatus['comment'] = __('INIT_BANK_TRANSFER');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'pending_payment';
+        }
+
+        if ($responsePaymentStatus == 'BANK_TRANSFER_AUTH' && $responseStatus == 'SUCCESS') {
+            $ordersByPaymentAndStatus['state'] = 'processing';
+            $ordersByPaymentAndStatus['status'] = 'processing';
+            $ordersByPaymentAndStatus['comment'] = __('SUCCESS');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'processing';
+        }
+
+        if ($responsePaymentStatus == 'INIT_THREEDS' && $responseStatus == 'SUCCESS') {
+            $ordersByPaymentAndStatus['state'] = 'pending_payment';
+            $ordersByPaymentAndStatus['status'] = 'pending_payment';
+            $ordersByPaymentAndStatus['comment'] = __('INIT_THREEDS_CRON');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'pending_payment';
+        }
+
+        if ($responsePaymentStatus == 'SUCCESS' && $responseStatus == 'SUCCESS') {
+            $ordersByPaymentAndStatus['state'] = 'processing';
+            $ordersByPaymentAndStatus['status'] = 'processing';
+            $ordersByPaymentAndStatus['comment'] = __('SUCCESS');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'processing';
+        }
+
+        if ($responsePaymentStatus == 'FAILURE') {
+            $ordersByPaymentAndStatus['state'] = 'canceled';
+            $ordersByPaymentAndStatus['status'] = 'canceled';
+            $ordersByPaymentAndStatus['comment'] = __('FAILURE');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'canceled';
+        }
+
+        return $ordersByPaymentAndStatus;
     }
 
+    /**
+     * Calculate Subtotal Price
+     *
+     * @param  $order
+     * @return string
+     */
+    public function calculateSubTotalPrice($order): string
+    {
+        $price = 0;
+        foreach ($order->getAllVisibleItems() as $item) {
+            $price += round($item->getPrice(), 2);
+        }
+
+        $price += $order->getShippingAddress()->getShippingAmount() ?? 0;
+        return $this->parsePrice($price);
+    }
 }

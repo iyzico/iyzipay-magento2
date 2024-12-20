@@ -3,17 +3,19 @@
 namespace Iyzico\Iyzipay\Helper;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\App\Config\Storage\WriterInterface;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
-class ConfigHelper
+readonly class ConfigHelper
 {
     public function __construct(
-        private readonly StoreManagerInterface $storeManager,
-        private readonly ScopeConfigInterface $scopeConfig
+        protected StoreManagerInterface $storeManager,
+        protected ScopeConfigInterface $scopeConfig,
+        protected WriterInterface $configWriter
     ) {
     }
 
@@ -100,18 +102,20 @@ class ConfigHelper
     }
 
     /**
-     * Get Api Key
+     * Get Locale Language Code
      *
      * @return mixed
      * @throws LocalizedException
      */
     public function getLocale(): mixed
     {
-        return $this->scopeConfig->getValue(
+        $fullLocale = $this->scopeConfig->getValue(
             'general/locale/code',
             $this->getScopeInterface(),
             $this->getWebsiteId()
         );
+
+        return explode('_', $fullLocale)[0] ?? $fullLocale;
     }
 
     /**
@@ -136,7 +140,7 @@ class ConfigHelper
      */
     public function getCallbackUrl(): string
     {
-        return $this->storeManager->getStore()->getBaseUrl() . "iyzico/response/iyzipayresponse";
+        return $this->storeManager->getStore()->getBaseUrl()."iyzico/response/iyzipayresponse";
     }
 
     /**
@@ -161,9 +165,9 @@ class ConfigHelper
      *
      * @throws NoSuchEntityException
      */
-    public function getGoBackUrl(): string
+    public function getGoBackUrl(string $basketId): string
     {
-        return $this->storeManager->getStore()->getBaseUrl() . "checkout/cart";
+        return $this->storeManager->getStore()->getBaseUrl()."iyzico/redirect/backtostore?quote_id=".$basketId;
     }
 
     /**
@@ -182,30 +186,13 @@ class ConfigHelper
     }
 
     /**
-     * Get Iyzipay Module order_status from configuration : TODO
-     *
-     * This function is responsible for getting the order status from the configuration.
-     *
-     * @return string
-     * @throws LocalizedException
-     */
-    public function getIyzipayOrderStatus(): string
-    {
-        return $this->scopeConfig->getValue(
-            'payment/iyzipay/order_status',
-            $this->getScopeInterface(),
-            $this->getWebsiteId()
-        );
-    }
-
-    /**
      * Get Iyzipay Magento Payment Source
      *
      * This function is responsible for getting the payment source.
      */
     public function getPaymentSource(): string
     {
-        return "MAGENTO2|" . $this->getMagentoVersion() . "|SPACE-2.1.4";
+        return "MAGENTO2|".$this->getMagentoVersion()."|SPACE-2.1.4";
     }
 
     /**
@@ -220,4 +207,83 @@ class ConfigHelper
         return $productMetaData->getVersion();
     }
 
+    /**
+     * Get Iyzipay OverlayScript
+     *
+     * This function is responsible for getting the overlay script.
+     *
+     * @return mixed
+     * @throws LocalizedException
+     */
+    public function getOverlayScript(): mixed
+    {
+        return $this->scopeConfig->getValue(
+            'payment/iyzipay/overlayscript',
+            $this->getScopeInterface(),
+            $this->getWebsiteId()
+        );
+    }
+
+    /**
+     * Get Base URL for the given Website ID
+     *
+     * @param  int|null  $websiteId
+     * @return string
+     * @throws LocalizedException
+     */
+    public function getWebsiteBaseUrl(?int $websiteId): string
+    {
+        if ($websiteId) {
+            $website = $this->storeManager->getWebsite($websiteId);
+            return $website->getDefaultStore()->getBaseUrl();
+        }
+        return $this->storeManager->getDefaultStoreView()->getBaseUrl();
+    }
+
+    /**
+     * Get Common Cron Settings
+     *
+     * @return mixed
+     * @throws LocalizedException
+     */
+    public function getCommonCronSettings(): mixed
+    {
+        return $this->scopeConfig->getValue(
+            'payment/iyzipay/common_cron_settings',
+            $this->getScopeInterface(),
+            $this->getWebsiteId()
+        );
+    }
+
+    /**
+     * Get Custom Cron Settings
+     *
+     * @return mixed
+     * @throws LocalizedException
+     */
+    public function getCustomCronSettings(): mixed
+    {
+        return $this->scopeConfig->getValue(
+            'payment/iyzipay/custom_cron_settings',
+            $this->getScopeInterface(),
+            $this->getWebsiteId()
+        );
+    }
+
+    /**
+     * Set Cron Settings
+     *
+     * @param $value
+     * @return void
+     * @throws LocalizedException
+     */
+    public function setCronSettings($value): void
+    {
+        $this->configWriter->save(
+            'crontab/default/jobs/iyzico_process_pending_orders/schedule/cron_expr',
+            $value,
+            $this->getScopeInterface(),
+            $this->getWebsiteId()
+        );
+    }
 }
