@@ -117,10 +117,10 @@ readonly class OrderService
         $order = $this->findOrderById($orderId);
         $payment = $order->getPayment();
 
-        if ($webhook != 'v3') {
+        if($webhook != 'v3'){
             $paymentStatus = $response->getPaymentStatus();
             $status = $response->getStatus();
-        } else {
+        }else{
             $paymentStatus = $response->getIyziEventType();
             $status = $response->getStatus();
         }
@@ -249,7 +249,7 @@ readonly class OrderService
             'iyzico_conversation_id' => $webhookData->getPaymentConversationId(),
             'iyzico_webhook_event_type' => $webhookData->getIyziEventType(),
             'iyzico_webhook_status' => $webhookData->getStatus(),
-            'iyzico_webhook_ref_code' => $webhookData->getIyziReferenceCode(),
+            'iyzico_webhook_ref_Code' => $webhookData->getIyziReferenceCode(),
         ];
 
         $payment->setAdditionalInformation($paymentAdditionalInformation);
