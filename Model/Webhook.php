@@ -192,16 +192,19 @@ class Webhook implements WebhookInterface
 
     /**
      * @inheritDoc
-     * @throws LocalizedException
      * @throws Exception
      */
     public function processWebhook(WebhookData $webhookData): void
     {
-        $token = $webhookData->getToken();
-        $conversationId = $webhookData->getPaymentConversationId();
-        $response = $this->orderService->retrieveAndValidateCheckoutForm($token, $conversationId);
-        $orderId = $this->orderJobService->findParametersByToken($token, 'order_id');
-        $this->orderService->updateOrderPaymentStatus($orderId, $response, 'yes');
+        try {
+            $token = $webhookData->getToken();
+            $conversationId = $webhookData->getPaymentConversationId();
+            $response = $this->orderService->retrieveAndValidateCheckoutForm($token, $conversationId);
+            $orderId = $this->orderJobService->findParametersByToken($token, 'order_id');
+            $this->orderService->updateOrderPaymentStatus($orderId, $response, 'yes');
+        } catch (Exception $e) {
+            $this->iyziWebhookLogger->error(sprintf('Webhook process error: %s', $e->getMessage()));
+        }
     }
 
     /**
@@ -210,26 +213,30 @@ class Webhook implements WebhookInterface
      */
     public function processWebhookV3(WebhookData $webhookData): void
     {
-        $paymentId = $webhookData->getIyziPaymentId();
+        try {
+            $paymentId = $webhookData->getIyziPaymentId();
 
-        $objectManager = ObjectManager::getInstance();
-        $searchCriteriaBuilder = $objectManager->create(SearchCriteriaBuilder::class);
-        $orderPaymentRepository = $objectManager->create(OrderPaymentRepositoryInterface::class);
+            $objectManager = ObjectManager::getInstance();
+            $searchCriteriaBuilder = $objectManager->create(SearchCriteriaBuilder::class);
+            $orderPaymentRepository = $objectManager->create(OrderPaymentRepositoryInterface::class);
 
-        $searchCriteria = $searchCriteriaBuilder
-            ->addFilter('last_trans_id', $paymentId)
-            ->create();
+            $searchCriteria = $searchCriteriaBuilder
+                ->addFilter('last_trans_id', $paymentId)
+                ->create();
 
-        $paymentList = $orderPaymentRepository->getList($searchCriteria);
+            $paymentList = $orderPaymentRepository->getList($searchCriteria);
 
-        if ($paymentList->getTotalCount() === 0) {
-            throw new LocalizedException(__('Payment record not found for payment ID: %1', $paymentId));
+            if ($paymentList->getTotalCount() === 0) {
+                throw new LocalizedException(__('Payment record not found for payment ID: %1', $paymentId));
+            }
+
+            $payment = $paymentList->getItems()[0];
+            $orderId = $payment->getParentId();
+
+            $this->orderService->updateOrderPaymentStatus($orderId, $webhookData, 'v3');
+        } catch (Exception $e) {
+            $this->iyziWebhookLogger->error(sprintf('Webhook process v3 error: %s', $e->getMessage()));
         }
-
-        $payment = $paymentList->getItems()[0];
-        $orderId = $payment->getParentId();
-
-        $this->orderService->updateOrderPaymentStatus($orderId, $webhookData, 'v3');
     }
 
     /**
