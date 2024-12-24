@@ -36,13 +36,13 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 class BackToStore implements HttpGetActionInterface
 {
     public function __construct(
-        protected readonly RedirectFactory $redirectFactory,
-        protected readonly QuoteRepository $quoteRepository,
-        protected readonly OrderRepositoryInterface $orderRepository,
-        protected readonly RequestInterface $request,
-        protected readonly OrderService $orderService,
-        protected readonly OrderJobService $orderJobService,
-        protected readonly OneTimeUrlService $oneTimeUrlService
+        protected RedirectFactory $redirectFactory,
+        protected QuoteRepository $quoteRepository,
+        protected OrderRepositoryInterface $orderRepository,
+        protected RequestInterface $request,
+        protected OrderService $orderService,
+        protected OrderJobService $orderJobService,
+        protected OneTimeUrlService $oneTimeUrlService
     ) {
     }
 

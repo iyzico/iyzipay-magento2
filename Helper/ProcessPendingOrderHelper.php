@@ -32,7 +32,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Api\OrderManagementInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 
-readonly class ProcessPendingOrderHelper
+class ProcessPendingOrderHelper
 {
     protected const IYZICO_TOKEN_EXPIRATION_MIN = 30;
     protected const PAGE_SIZE = 100;

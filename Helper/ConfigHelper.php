@@ -30,7 +30,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
-readonly class ConfigHelper
+class ConfigHelper
 {
     public function __construct(
         protected StoreManagerInterface $storeManager,

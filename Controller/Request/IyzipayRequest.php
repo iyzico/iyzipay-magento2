@@ -48,19 +48,19 @@ class IyzipayRequest implements ActionInterface
 {
     public function __construct
     (
-        protected readonly CheckoutSession $checkoutSession,
-        protected readonly CustomerSession $customerSession,
-        protected readonly IyziCardFactory $iyziCardFactory,
-        protected readonly JsonFactory $resultJsonFactory,
-        protected readonly Quote $quote,
-        protected readonly ConfigHelper $configHelper,
-        protected readonly UtilityHelper $utilityHelper,
-        protected readonly ObjectHelper $objectHelper,
-        protected readonly OrderJobService $orderJobService,
-        protected readonly OrderService $orderService,
-        protected readonly CartManagementInterface $cartManagement,
-        protected readonly CartRepositoryInterface $cartRepository,
-        protected readonly OneTimeUrlService $oneTimeUrlService
+        protected CheckoutSession $checkoutSession,
+        protected CustomerSession $customerSession,
+        protected IyziCardFactory $iyziCardFactory,
+        protected JsonFactory $resultJsonFactory,
+        protected Quote $quote,
+        protected ConfigHelper $configHelper,
+        protected UtilityHelper $utilityHelper,
+        protected ObjectHelper $objectHelper,
+        protected OrderJobService $orderJobService,
+        protected OrderService $orderService,
+        protected CartManagementInterface $cartManagement,
+        protected CartRepositoryInterface $cartRepository,
+        protected OneTimeUrlService $oneTimeUrlService
     ) {
     }
 

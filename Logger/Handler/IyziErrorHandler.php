@@ -29,7 +29,7 @@ class IyziErrorHandler extends StreamHandler
 {
     public function __construct()
     {
-        $filePath = BP . '/var/log/iyzipay_error.log';
+        $filePath = BP.'/var/log/iyzipay_error.log';
         parent::__construct($filePath, Logger::DEBUG);
     }
 }

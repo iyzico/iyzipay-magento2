@@ -30,7 +30,7 @@ use Iyzico\Iyzipay\Model\ResourceModel\IyziCard as IyziCardResource;
 use Iyzico\Iyzipay\Model\ResourceModel\IyziCard\CollectionFactory as IyziCardCollectionFactory;
 use Throwable;
 
-readonly class CardService
+class CardService
 {
     public function __construct(
         protected IyziCardFactory $iyziCardFactory,

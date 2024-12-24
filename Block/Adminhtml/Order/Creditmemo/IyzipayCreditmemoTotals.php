@@ -52,7 +52,6 @@ class IyzipayCreditmemoTotals extends IyzipayTotals
      */
     protected function _initTotals()
     {
-
         parent::_initTotals();
 
         $this->addTotal(

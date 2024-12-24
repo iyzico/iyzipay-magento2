@@ -29,7 +29,7 @@ class IyziWebhookHandler extends StreamHandler
 {
     public function __construct()
     {
-        $filePath = BP . '/var/log/iyzipay_webhook.log';
+        $filePath = BP.'/var/log/iyzipay_webhook.log';
         parent::__construct($filePath, Logger::DEBUG);
     }
 }

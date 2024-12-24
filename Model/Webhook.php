@@ -43,12 +43,12 @@ class Webhook implements WebhookInterface
     protected WebhookData $webhookData;
 
     public function __construct(
-        protected readonly RequestInterface $request,
-        protected readonly ConfigHelper $configHelper,
-        protected readonly UtilityHelper $utilityHelper,
-        protected readonly OrderService $orderService,
-        protected readonly OrderJobService $orderJobService,
-        protected readonly IyziWebhookLogger $iyziWebhookLogger
+        protected RequestInterface $request,
+        protected ConfigHelper $configHelper,
+        protected UtilityHelper $utilityHelper,
+        protected OrderService $orderService,
+        protected OrderJobService $orderJobService,
+        protected IyziWebhookLogger $iyziWebhookLogger
     ) {
     }
 
@@ -115,7 +115,8 @@ class Webhook implements WebhookInterface
 
         $paymentConversationId = $json['paymentConversationId'] ?? null;
         if (empty($paymentConversationId)) {
-            $this->iyziWebhookLogger->error(sprintf('paymentConversationId is missing or empty, content: %s', $content));
+            $this->iyziWebhookLogger->error(sprintf('paymentConversationId is missing or empty, content: %s',
+                $content));
             throw new LocalizedException(__('paymentConversationId is missing or empty'));
         }
 

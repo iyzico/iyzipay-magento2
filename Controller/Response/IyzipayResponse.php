@@ -48,20 +48,20 @@ use Magento\Quote\Model\ResourceModel\Quote as QuoteResource;
 class IyzipayResponse implements HttpPostActionInterface, CsrfAwareActionInterface
 {
     public function __construct(
-        protected readonly RequestInterface $request,
-        protected readonly CheckoutSession $checkoutSession,
-        protected readonly CustomerSession $customerSession,
-        protected readonly ManagerInterface $messageManager,
-        protected readonly IyziErrorLogger $errorLogger,
-        protected readonly CartRepositoryInterface $quoteRepository,
-        protected readonly ResultFactory $resultFactory,
-        protected readonly ConfigHelper $configHelper,
-        protected readonly OrderJobService $orderJobService,
-        protected readonly OrderService $orderService,
-        protected readonly CardService $cardService,
-        protected readonly UtilityHelper $utilityHelper,
-        protected readonly QuoteResource $quoteResource,
-        protected readonly CartManagementInterface $cartManagement,
+        protected RequestInterface $request,
+        protected CheckoutSession $checkoutSession,
+        protected CustomerSession $customerSession,
+        protected ManagerInterface $messageManager,
+        protected IyziErrorLogger $errorLogger,
+        protected CartRepositoryInterface $quoteRepository,
+        protected ResultFactory $resultFactory,
+        protected ConfigHelper $configHelper,
+        protected OrderJobService $orderJobService,
+        protected OrderService $orderService,
+        protected CardService $cardService,
+        protected UtilityHelper $utilityHelper,
+        protected QuoteResource $quoteResource,
+        protected CartManagementInterface $cartManagement,
     ) {
     }
 
@@ -77,7 +77,7 @@ class IyzipayResponse implements HttpPostActionInterface, CsrfAwareActionInterfa
     {
         $params = $request->getParams();
         $this->errorLogger->critical(
-            "createCsrfValidationException: " . json_encode($params),
+            "createCsrfValidationException: ".json_encode($params),
             ['fileName' => __FILE__, 'lineNumber' => __LINE__]
         );
         return null;
@@ -147,7 +147,7 @@ class IyzipayResponse implements HttpPostActionInterface, CsrfAwareActionInterfa
                 try {
                     $this->quoteResource->save($quote);
                 } catch (Exception $e) {
-                    $this->errorLogger->critical("Quote save error: " . $e->getMessage());
+                    $this->errorLogger->critical("Quote save error: ".$e->getMessage());
                     throw new LocalizedException(__('Quote could not be saved.'));
                 }
 
@@ -161,7 +161,7 @@ class IyzipayResponse implements HttpPostActionInterface, CsrfAwareActionInterfa
             }
         } catch (Exception $e) {
             $this->errorLogger->critical(
-                "execute error: " . $e->getMessage(),
+                "execute error: ".$e->getMessage(),
                 ['fileName' => __FILE__, 'lineNumber' => __LINE__]
             );
             $this->messageManager->addErrorMessage(__('An error occurred while processing your payment. Please try again.'));
@@ -184,7 +184,7 @@ class IyzipayResponse implements HttpPostActionInterface, CsrfAwareActionInterfa
             return $this->quoteRepository->get($quoteId);
         } catch (NoSuchEntityException $e) {
             $this->errorLogger->critical(
-                "findQuoteById: $quoteId - Message: " . $e->getMessage(),
+                "findQuoteById: $quoteId - Message: ".$e->getMessage(),
                 ['fileName' => __FILE__, 'lineNumber' => __LINE__]
             );
             return null;

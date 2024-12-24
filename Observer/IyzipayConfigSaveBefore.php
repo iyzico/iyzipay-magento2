@@ -38,8 +38,8 @@ use Magento\Store\Model\ScopeInterface;
 class IyzipayConfigSaveBefore implements ObserverInterface
 {
     public function __construct(
-        protected readonly UtilityHelper $utilityHelper,
-        protected readonly ConfigHelper $configHelper,
+        protected UtilityHelper $utilityHelper,
+        protected ConfigHelper $configHelper,
         protected WriterInterface $configWriter,
         protected Http $request
     ) {

@@ -45,7 +45,7 @@ use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order\Payment\Transaction;
 
-readonly class OrderService
+class OrderService
 {
 
     public function __construct(
@@ -117,10 +117,10 @@ readonly class OrderService
         $order = $this->findOrderById($orderId);
         $payment = $order->getPayment();
 
-        if($webhook != 'v3'){
+        if ($webhook != 'v3') {
             $paymentStatus = $response->getPaymentStatus();
             $status = $response->getStatus();
-        }else{
+        } else {
             $paymentStatus = $response->getIyziEventType();
             $status = $response->getStatus();
         }
@@ -150,7 +150,7 @@ readonly class OrderService
         }
 
         if ($webhook === 'no') {
-            $order->addCommentToStatusHistory("Payment ID: " . $response->getPaymentId() . " - Conversation ID:" . $response->getConversationId());
+            $order->addCommentToStatusHistory("Payment ID: ".$response->getPaymentId()." - Conversation ID:".$response->getConversationId());
             $this->updatePaymentAdditionalInformation($payment, $response);
         }
 
@@ -171,7 +171,7 @@ readonly class OrderService
             return $this->orderRepository->get($orderId);
         } catch (Exception $e) {
             $this->errorLogger->critical(
-                "findOrderById: $orderId - Message: " . $e->getMessage(),
+                "findOrderById: $orderId - Message: ".$e->getMessage(),
                 ['fileName' => __FILE__, 'lineNumber' => __LINE__]
             );
             return null;
@@ -206,34 +206,6 @@ readonly class OrderService
      * This function is responsible for updating the payment additional information.
      *
      * @param  OrderPaymentInterface|null  $payment
-     * @param  CheckoutForm  $response
-     * @return void
-     */
-    private function updatePaymentAdditionalInformation(
-        OrderPaymentInterface|null $payment,
-        CheckoutForm $response
-    ): void {
-        $payment->setLastTransId($response->getPaymentId());
-
-        $paymentAdditionalInformation = [
-            'method_title' => 'iyzipay',
-            'iyzico_payment_id' => $response->getPaymentId(),
-            'iyzico_conversation_id' => $response->getConversationId(),
-        ];
-
-        $payment->setAdditionalInformation($paymentAdditionalInformation);
-
-        $payment->setTransactionId($response->getPaymentId());
-        $payment->setIsTransactionClosed(0);
-        $payment->setTransactionAdditionalInfo(Transaction::RAW_DETAILS, json_encode($paymentAdditionalInformation));
-    }
-
-    /**
-     * Update Payment Additional Information
-     *
-     * This function is responsible for updating the payment additional information.
-     *
-     * @param  OrderPaymentInterface|null  $payment
      * @param  WebhookData  $webhookData
      * @return void
      */
@@ -255,6 +227,34 @@ readonly class OrderService
         $payment->setAdditionalInformation($paymentAdditionalInformation);
 
         $payment->setTransactionId($webhookData->getIyziPaymentId());
+        $payment->setIsTransactionClosed(0);
+        $payment->setTransactionAdditionalInfo(Transaction::RAW_DETAILS, json_encode($paymentAdditionalInformation));
+    }
+
+    /**
+     * Update Payment Additional Information
+     *
+     * This function is responsible for updating the payment additional information.
+     *
+     * @param  OrderPaymentInterface|null  $payment
+     * @param  CheckoutForm  $response
+     * @return void
+     */
+    private function updatePaymentAdditionalInformation(
+        OrderPaymentInterface|null $payment,
+        CheckoutForm $response
+    ): void {
+        $payment->setLastTransId($response->getPaymentId());
+
+        $paymentAdditionalInformation = [
+            'method_title' => 'iyzipay',
+            'iyzico_payment_id' => $response->getPaymentId(),
+            'iyzico_conversation_id' => $response->getConversationId(),
+        ];
+
+        $payment->setAdditionalInformation($paymentAdditionalInformation);
+
+        $payment->setTransactionId($response->getPaymentId());
         $payment->setIsTransactionClosed(0);
         $payment->setTransactionAdditionalInfo(Transaction::RAW_DETAILS, json_encode($paymentAdditionalInformation));
     }

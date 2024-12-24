@@ -29,7 +29,7 @@ class IyziCronHandler extends StreamHandler
 {
     public function __construct()
     {
-        $filePath = BP . '/var/log/iyzipay_cron.log';
+        $filePath = BP.'/var/log/iyzipay_cron.log';
         parent::__construct($filePath, Logger::DEBUG);
     }
 }

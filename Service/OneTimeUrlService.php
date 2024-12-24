@@ -29,7 +29,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Math\Random;
 use Magento\Store\Model\StoreManagerInterface;
 
-readonly class OneTimeUrlService
+class OneTimeUrlService
 {
     private const CACHE_LIFETIME = 1800;
     private const TOKEN_LENGTH = 32;
@@ -55,7 +55,7 @@ readonly class OneTimeUrlService
         $token = $this->random->getRandomString(self::TOKEN_LENGTH);
         $this->cache->save(
             $basketId,
-            self::CACHE_PREFIX . $token,
+            self::CACHE_PREFIX.$token,
             [],
             self::CACHE_LIFETIME
         );
@@ -71,7 +71,7 @@ readonly class OneTimeUrlService
      */
     public function validateAndGetBasketId(string $token): ?string
     {
-        $cacheKey = self::CACHE_PREFIX . $token;
+        $cacheKey = self::CACHE_PREFIX.$token;
         $basketId = $this->cache->load($cacheKey);
 
         if ($basketId) {

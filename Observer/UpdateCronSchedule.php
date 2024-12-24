@@ -30,8 +30,8 @@ use Magento\Framework\Event\ObserverInterface;
 class UpdateCronSchedule implements ObserverInterface
 {
     public function __construct(
-        protected readonly CronHelper $cronHelper,
-        protected readonly IyziCronLogger $logger
+        protected CronHelper $cronHelper,
+        protected IyziCronLogger $logger
     ) {
     }
 

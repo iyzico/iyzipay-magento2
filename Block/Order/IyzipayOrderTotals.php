@@ -28,6 +28,7 @@ use Magento\Framework\Registry;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Sales\Model\Order;
+
 use function uksort;
 
 /**
@@ -68,9 +69,9 @@ class IyzipayOrderTotals extends Template
     /**
      * IyzipayOrderTotals Constructor
      *
-     * @param Context $context
-     * @param Registry $registry
-     * @param array $data
+     * @param  Context  $context
+     * @param  Registry  $registry
+     * @param  array  $data
      */
     public function __construct(Context $context, Registry $registry, array $data = [])
     {
@@ -81,8 +82,8 @@ class IyzipayOrderTotals extends Template
     /**
      * Add new total to totals array after specific total or before last total by default
      *
-     * @param DataObject $total
-     * @param null|string $after
+     * @param  DataObject  $total
+     * @param  null|string  $after
      * @return  $this
      */
     public function addTotal(DataObject $total, string $after = null)
@@ -119,8 +120,8 @@ class IyzipayOrderTotals extends Template
     /**
      * Add new total to totals array before specific total or after first total by default
      *
-     * @param DataObject $total
-     * @param null|string $before
+     * @param  DataObject  $total
+     * @param  null|string  $before
      * @return  $this
      */
     public function addTotalBefore(DataObject $total, $before = null)
@@ -157,7 +158,7 @@ class IyzipayOrderTotals extends Template
     /**
      * Get Total object by code
      *
-     * @param string $code
+     * @param  string  $code
      * @return mixed
      */
     public function getTotal($code)
@@ -171,7 +172,7 @@ class IyzipayOrderTotals extends Template
     /**
      * Delete total by specific
      *
-     * @param string $code
+     * @param  string  $code
      * @return  $this
      */
     public function removeTotal($code)
@@ -187,7 +188,7 @@ class IyzipayOrderTotals extends Template
      *  $totalCode => $totalSortOrder
      * )
      *
-     * @param array $order
+     * @param  array  $order
      * @return  $this
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
@@ -205,7 +206,7 @@ class IyzipayOrderTotals extends Template
     /**
      * Get totals array for visualization
      *
-     * @param array|null $area
+     * @param  array|null  $area
      * @return array
      */
     public function getTotals($area = null)
@@ -228,7 +229,7 @@ class IyzipayOrderTotals extends Template
     /**
      * Format total value based on order currency
      *
-     * @param DataObject $total
+     * @param  DataObject  $total
      * @return  string
      */
     public function formatValue($total)
@@ -261,7 +262,7 @@ class IyzipayOrderTotals extends Template
     /**
      * Sets order.
      *
-     * @param Order $order
+     * @param  Order  $order
      * @return $this
      */
     public function setOrder($order)
@@ -304,7 +305,7 @@ class IyzipayOrderTotals extends Template
                     'field' => 'installment_fee',
                     'strong' => true,
                     'value' => $source->getInstallmentFee(),
-                    'label' => $source->getInstallmentCount() . ' ' . __('Installment'),
+                    'label' => $source->getInstallmentCount().' '.__('Installment'),
                 ]
             );
         }
@@ -369,7 +370,7 @@ class IyzipayOrderTotals extends Template
     /**
      * Add shipping total
      *
-     * @param Order|Order\Invoice $source
+     * @param  Order|Order\Invoice  $source
      * @retrurn void
      */
     private function addShippingTotal($source)

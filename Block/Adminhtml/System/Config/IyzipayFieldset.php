@@ -51,11 +51,11 @@ class IyzipayFieldset extends Fieldset
     /**
      * IyzipayFieldset constructor
      *
-     * @param Context $context
-     * @param Session $authSession
-     * @param Js $jsHelper
-     * @param StoreManagerInterface $storeManager
-     * @param array $data
+     * @param  Context  $context
+     * @param  Session  $authSession
+     * @param  Js  $jsHelper
+     * @param  StoreManagerInterface  $storeManager
+     * @param  array  $data
      */
     public function __construct(
         Context $context,
@@ -73,21 +73,21 @@ class IyzipayFieldset extends Fieldset
         $html = '';
 
         if ($element->getIsNested()) {
-            $html .= '<tr class="nested"><td colspan="4"><div class="' . $this->_getFrontendClass($element) . '">';
+            $html .= '<tr class="nested"><td colspan="4"><div class="'.$this->_getFrontendClass($element).'">';
         } else {
-            $html .= '<div class="' . $this->_getFrontendClass($element) . '">';
+            $html .= '<div class="'.$this->_getFrontendClass($element).'">';
         }
 
-        $html .= '<div class="entry-edit-head admin__collapsible-block">' .
-            '<span id="' . $element->getHtmlId() . '-link" class="entry-edit-head-link"></span>';
+        $html .= '<div class="entry-edit-head admin__collapsible-block">'.
+            '<span id="'.$element->getHtmlId().'-link" class="entry-edit-head-link"></span>';
 
         $html .= $this->_getHeaderTitleHtml($element);
 
         $html .= '</div>';
-        $html .= '<input id="' . $element->getHtmlId() . '-state" name="config_state[' .
-            $element->getId() . ']" type="hidden" value="' . (int) $this->_isCollapseState($element) . '" />';
-        $html .= '<fieldset class="config admin__collapsible-block" id="' . $element->getHtmlId() . '" style="position: relative;">';
-        $html .= '<legend>' . $element->getLegend() . '</legend>';
+        $html .= '<input id="'.$element->getHtmlId().'-state" name="config_state['.
+            $element->getId().']" type="hidden" value="'.(int) $this->_isCollapseState($element).'" />';
+        $html .= '<fieldset class="config admin__collapsible-block" id="'.$element->getHtmlId().'" style="position: relative;">';
+        $html .= '<legend>'.$element->getLegend().'</legend>';
 
         $html .= $this->_getHeaderCommentHtml($element);
 
@@ -98,7 +98,7 @@ class IyzipayFieldset extends Fieldset
 
         $html .= '<colgroup class="scope-label" /><colgroup class="" /><tbody>';
         $html .= '<div style="position:absolute;right: 0px;top:0px;display: flex;flex-direction: column;justify-content: center;">
-                    <img src="' . $this->getViewFileUrl('Iyzico_Iyzipay::iyzico/iyzico_logo.png') . '" style="width: 180px; margin-left: auto;" /><span></span>
+                    <img src="'.$this->getViewFileUrl('Iyzico_Iyzipay::iyzico/iyzico_logo.png').'" style="width: 180px; margin-left: auto;" /><span></span>
                 </div>';
 
         return $html;

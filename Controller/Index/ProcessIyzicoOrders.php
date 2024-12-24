@@ -20,34 +20,33 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace Iyzico\Iyzipay\Helper;
+namespace Iyzico\Iyzipay\Controller\Index;
 
-use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\App\Action\HttpGetActionInterface;
+use Magento\Framework\Controller\Result\JsonFactory;
+use Iyzico\Iyzipay\Cron\ProcessPendingOrders;
 
-class CronHelper
+class ProcessIyzicoOrders implements HttpGetActionInterface
 {
     public function __construct(
-        protected ConfigHelper $configHelper
+        protected JsonFactory $jsonFactory,
+        protected ProcessPendingOrders $processPendingOrders
     ) {
     }
 
-    /**
-     * @throws LocalizedException
-     */
-    public function getCronSchedule()
+    public function execute()
     {
-        $commonSettings = $this->configHelper->getCommonCronSettings();
-        if ($commonSettings && $commonSettings !== 'custom') {
-            $this->configHelper->setCronSettings($commonSettings);
-            return $commonSettings;
-        }
+        try {
+            $result = $this->processPendingOrders->execute();
 
-        $customCronSettings = $this->configHelper->getCustomCronSettings();
-        if ($customCronSettings) {
-            $this->configHelper->setCronSettings($customCronSettings);
-            return $customCronSettings;
+            $resultJson = $this->jsonFactory->create();
+            return $resultJson->setData($result);
+        } catch (\Exception $e) {
+            $resultJson = $this->jsonFactory->create();
+            return $resultJson->setData([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
         }
-
-        return '0 0 * * *';
     }
 }

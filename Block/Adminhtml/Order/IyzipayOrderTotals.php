@@ -50,18 +50,17 @@ class IyzipayOrderTotals extends Totals
     /**
      * IyzipayOrderTotals constructor
      *
-     * @param Context $context
-     * @param Registry $registry
-     * @param Admin $adminHelper
-     * @param array $data
+     * @param  Context  $context
+     * @param  Registry  $registry
+     * @param  Admin  $adminHelper
+     * @param  array  $data
      */
     public function __construct(
-        Context  $context,
+        Context $context,
         Registry $registry,
-        Admin    $adminHelper,
-        array    $data = []
-    )
-    {
+        Admin $adminHelper,
+        array $data = []
+    ) {
         $this->_adminHelper = $adminHelper;
         parent::__construct($context, $registry, $data);
     }
@@ -69,7 +68,7 @@ class IyzipayOrderTotals extends Totals
     /**
      * Format total value based on order currency
      *
-     * @param DataObject $total
+     * @param  DataObject  $total
      * @return string
      */
     public function formatValue($total)
@@ -92,13 +91,13 @@ class IyzipayOrderTotals extends Totals
         /**
          * Add Installment Fee
          */
-        if ((double)$this->getSource()->getInstallmentFee() != 0) {
+        if ((double) $this->getSource()->getInstallmentFee() != 0) {
             $this->_totals['installment_fee'] = new DataObject(
                 [
                     'code' => 'installment_fee',
                     'value' => $this->getSource()->getInstallmentFee(),
                     'base_value' => $this->getSource()->getInstallmentFee(),
-                    'label' => $this->getSource()->getInstallmentCount() . ' ' . __('Installment'),
+                    'label' => $this->getSource()->getInstallmentCount().' '.__('Installment'),
                 ]
             );
         }
@@ -115,7 +114,7 @@ class IyzipayOrderTotals extends Totals
         /**
          * Add shipping
          */
-        if (!$this->getSource()->getIsVirtual() && ((double)$this->getSource()->getShippingAmount() ||
+        if (!$this->getSource()->getIsVirtual() && ((double) $this->getSource()->getShippingAmount() ||
                 $this->getSource()->getShippingDescription())
         ) {
             $this->_totals['shipping'] = new DataObject(
@@ -131,7 +130,7 @@ class IyzipayOrderTotals extends Totals
         /**
          * Add discount
          */
-        if ((double)$this->getSource()->getDiscountAmount() != 0) {
+        if ((double) $this->getSource()->getDiscountAmount() != 0) {
             if ($this->getSource()->getDiscountDescription()) {
                 $discountLabel = __('Discount (%1)', $this->getSource()->getDiscountDescription());
             } else {

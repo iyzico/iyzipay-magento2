@@ -30,7 +30,7 @@ use Iyzico\Iyzipay\Library\Model\Buyer;
 class ObjectHelper
 {
     public function __construct(
-        private readonly UtilityHelper $utilityHelper
+        private UtilityHelper $utilityHelper
     ) {
     }
 

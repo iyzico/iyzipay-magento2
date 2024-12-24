@@ -29,7 +29,7 @@ use Iyzico\Iyzipay\Model\ResourceModel\IyziOrderJob as IyziOrderJobResource;
 use Iyzico\Iyzipay\Model\ResourceModel\IyziOrderJob\CollectionFactory as IyziOrderJobCollectionFactory;
 use Throwable;
 
-readonly class OrderJobService
+class OrderJobService
 {
     public function __construct(
         protected IyziOrderJobFactory $iyziOrderJobFactory,

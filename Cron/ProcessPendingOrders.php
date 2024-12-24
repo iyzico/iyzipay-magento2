@@ -30,8 +30,8 @@ class ProcessPendingOrders
 {
 
     public function __construct(
-        protected readonly IyziCronLogger $cronLogger,
-        protected readonly ProcessPendingOrderHelper $processPendingOrderHelper
+        protected IyziCronLogger $cronLogger,
+        protected ProcessPendingOrderHelper $processPendingOrderHelper
     ) {
     }
 

@@ -51,18 +51,17 @@ class IyzipayInvoiceTotal extends Totals
     /**
      * IyzipayInvoiceTotal constructor
      *
-     * @param Context $context
-     * @param Registry $registry
-     * @param Admin $adminHelper
-     * @param array $data
+     * @param  Context  $context
+     * @param  Registry  $registry
+     * @param  Admin  $adminHelper
+     * @param  array  $data
      */
     public function __construct(
-        Context  $context,
+        Context $context,
         Registry $registry,
-        Admin    $adminHelper,
-        array    $data = []
-    )
-    {
+        Admin $adminHelper,
+        array $data = []
+    ) {
         $this->_adminHelper = $adminHelper;
         parent::__construct($context, $registry, $data);
     }
@@ -95,12 +94,12 @@ class IyzipayInvoiceTotal extends Totals
         /**
          * Add Installment Fee
          */
-        if ((double)$this->getSource()->getInstallmentFee() != 0) {
+        if ((double) $this->getSource()->getInstallmentFee() != 0) {
             $this->_totals['installment_fee'] = new DataObject([
                 'code' => 'installment_fee',
                 'value' => $this->getSource()->getInstallmentFee(),
                 'base_value' => $this->getSource()->getInstallmentFee(),
-                'label' => $this->getSource()->getInstallmentCount() . ' ' . __('Installment'),
+                'label' => $this->getSource()->getInstallmentCount().' '.__('Installment'),
             ]);
         }
 
@@ -114,7 +113,7 @@ class IyzipayInvoiceTotal extends Totals
         /**
          * Add Shipping
          */
-        if (!$this->getSource()->getIsVirtual() && ((double)$this->getSource()->getShippingAmount() || $this->getSource()->getShippingDescription())) {
+        if (!$this->getSource()->getIsVirtual() && ((double) $this->getSource()->getShippingAmount() || $this->getSource()->getShippingDescription())) {
             $this->_totals['shipping'] = new DataObject([
                 'code' => 'shipping',
                 'value' => $this->getSource()->getShippingAmount(),
@@ -126,7 +125,7 @@ class IyzipayInvoiceTotal extends Totals
         /**
          * Add Discount
          */
-        if ((double)$this->getSource()->getDiscountAmount() != 0) {
+        if ((double) $this->getSource()->getDiscountAmount() != 0) {
             $discountLabel = $this->getSource()->getDiscountDescription() ?
                 __('Discount (%1)', $this->getSource()->getDiscountDescription()) :
                 __('Discount');

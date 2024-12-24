@@ -66,7 +66,8 @@ class DataAssignObserver implements ObserverInterface
             $payment->setBaseAmountPaid($grandTotalWithFee);
             $payment->setAmountPaid($grandTotalWithFee);
 
-            $installmentInfo = sprintf(__('Installment Info: %d Installment / %s %s'), $installmentCount, $getInstallmentFee, $currency);
+            $installmentInfo = sprintf(__('Installment Info: %d Installment / %s %s'), $installmentCount,
+                $getInstallmentFee, $currency);
 
             $order->addStatusHistoryComment($installmentInfo)->setIsVisibleOnFront(true);
         }
