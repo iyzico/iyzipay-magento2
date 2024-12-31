@@ -60,12 +60,12 @@ class OrderJobService
             }
 
             $iyzicoOrderJob->setStatus($status);
-
-            if ($status == 'processing' || $status == 'canceled') {
-                $this->iyziOrderJobResource->delete($iyzicoOrderJob);
-            } else {
-                $this->iyziOrderJobResource->save($iyzicoOrderJob);
-            }
+            $this->iyziOrderJobResource->save($iyzicoOrderJob);
+            /** Remove this logic
+             * if ($status == 'processing' || $status == 'canceled') {
+             * $this->iyziOrderJobResource->delete($iyzicoOrderJob);
+             * }
+             * */
         } catch (Throwable $th) {
             $this->errorLogger->critical("setOrderJobStatus: ".$th->getMessage(), [
                 'fileName' => __FILE__,

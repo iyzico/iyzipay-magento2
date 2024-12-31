@@ -104,9 +104,8 @@ class OrderService
      *
      * @param  string  $orderId
      * @param  mixed  $response
-     * @param  bool  $isWebhook
+     * @param  string  $webhook
      * @return void
-     * @throws Exception
      */
     public function updateOrderPaymentStatus(string $orderId, mixed $response, string $webhook = 'no'): void
     {
@@ -250,6 +249,7 @@ class OrderService
             'method_title' => 'iyzipay',
             'iyzico_payment_id' => $response->getPaymentId(),
             'iyzico_conversation_id' => $response->getConversationId(),
+            'iyzico_md_status' => $response->getMdStatus()
         ];
 
         $payment->setAdditionalInformation($paymentAdditionalInformation);
