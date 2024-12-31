@@ -6,9 +6,9 @@ use Iyzico\Iyzipay\Library\Model\PaymentResource;
 
 class PaymentResourceMapper extends IyzipayResourceMapper
 {
-    public static function create($rawResult = null)
+    public function mapPaymentResource(PaymentResource $paymentResource)
     {
-        return new PaymentResourceMapper($rawResult);
+        return $this->mapPaymentResourceFrom($paymentResource, $this->jsonObject);
     }
 
     public function mapPaymentResourceFrom(PaymentResource $paymentResource, $jsonObject)
@@ -90,11 +90,14 @@ class PaymentResourceMapper extends IyzipayResourceMapper
         if (isset($jsonObject->signature)) {
             $paymentResource->setSignature($jsonObject->signature);
         }
+        if (isset($jsonObject->mdStatus)) {
+            $paymentResource->setMdStatus($jsonObject->mdStatus);
+        }
         return $paymentResource;
     }
 
-    public function mapPaymentResource(PaymentResource $paymentResource)
+    public static function create($rawResult = null)
     {
-        return $this->mapPaymentResourceFrom($paymentResource, $this->jsonObject);
+        return new PaymentResourceMapper($rawResult);
     }
 }
