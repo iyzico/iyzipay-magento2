@@ -29,10 +29,17 @@
             </argument>
         </arguments>
     </type>
+
+    <!-- Config value handler -->
     <type name="Magento\Payment\Gateway\Config\ConfigValueHandler">
         <arguments>
             <argument name="configInterface" xsi:type="object">Magento\Payment\Gateway\Config\Config</argument>
         </arguments>
+    </type>
+
+    <!-- IyzipayOrderIdentity -->
+    <type name="Magento\Sales\Model\Order\Email\Container\OrderIdentity">
+        <plugin name="iyzico_order_email" type="Iyzico\Iyzipay\Plugin\Order\Email\Container\IyzipayOrderIdentity"/>
     </type>
 
     <!-- IyzipaySubtotal -->
