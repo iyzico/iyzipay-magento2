@@ -16,7 +16,8 @@
         },
         "constraint": {
             "PRIMARY": true,
-            "IYZICO_ORDER_JOB_QUOTE_ID_QUOTE_ENTITY_ID": true
+            "IYZICO_ORDER_JOB_QUOTE_ID_QUOTE_ENTITY_ID": true,
+            "IYZICO_ORDER_JOB_ORDER_ID_SALES_ORDER_ENTITY_ID": true
         }
     },
     "iyzico_card": {
