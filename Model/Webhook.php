@@ -230,8 +230,8 @@ class Webhook implements WebhookInterface
                 throw new LocalizedException(__('Payment record not found for payment ID: %1', $paymentId));
             }
 
-            $payment = $paymentList->getItems()[0];
-            $orderId = $payment->getParentId();
+            $payment = current($paymentList->getItems());
+            $orderId = $payment['parent_id'];
 
             $this->orderService->updateOrderPaymentStatus($orderId, $webhookData, 'v3');
         } catch (Exception $e) {
