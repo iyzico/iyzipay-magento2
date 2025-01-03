@@ -214,19 +214,12 @@ class OrderService
     ): void {
         $payment->setLastTransId($webhookData->getIyziPaymentId());
 
-        $paymentAdditionalInformation = [
-            'method_title' => 'iyzipay',
-            'iyzico_payment_id' => $webhookData->getIyziPaymentId(),
-            'iyzico_conversation_id' => $webhookData->getPaymentConversationId(),
-            'iyzico_webhook_event_type' => $webhookData->getIyziEventType(),
-            'iyzico_webhook_status' => $webhookData->getStatus(),
-            'iyzico_webhook_ref_Code' => $webhookData->getIyziReferenceCode(),
-        ];
+        $paymentAdditionalInformation = $payment->getAdditionalInformation();
+        $paymentAdditionalInformation['iyzico_webhook_event_type'] = $webhookData->getIyziEventType();
+        $paymentAdditionalInformation['iyzico_webhook_status'] = $webhookData->getStatus();
+        $paymentAdditionalInformation['iyzico_webhook_ref_code'] = $webhookData->getIyziReferenceCode();
 
         $payment->setAdditionalInformation($paymentAdditionalInformation);
-
-        $payment->setTransactionId($webhookData->getIyziPaymentId());
-        $payment->setIsTransactionClosed(0);
         $payment->setTransactionAdditionalInfo(Transaction::RAW_DETAILS, json_encode($paymentAdditionalInformation));
     }
 
