@@ -179,7 +179,7 @@ class Webhook implements WebhookInterface
      */
     public function generateKey(string $secretKey, WebhookData $webhookData): string
     {
-        return $secretKey.$webhookData->getIyziEventType().$webhookData->getIyziPaymentId().$webhookData->getPaymentConversationId().$webhookData->getStatus();
+        return $secretKey.$webhookData->getIyziEventType().$webhookData->getIyziPaymentId().$webhookData->getToken().$webhookData->getPaymentConversationId().$webhookData->getStatus();
     }
 
     /**
