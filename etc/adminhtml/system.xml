@@ -11,7 +11,7 @@
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="iyzipay_webhook_url" translate="label" type="text" sortOrder="5" showInDefault="1"
+                <field id="webhook_url_key" translate="label" type="text" sortOrder="5" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <label>Webhook URL</label>
                     <frontend_model>Iyzico\Iyzipay\Block\Adminhtml\System\Config\IyzipayWebhookField</frontend_model>
