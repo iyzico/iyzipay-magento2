@@ -91,22 +91,6 @@ class ConfigHelper
     }
 
     /**
-     * Get Webhook Url Key Active
-     *
-     * @return mixed
-     * @throws LocalizedException
-     */
-    public function getWebhookUrlKeyActive(): mixed
-    {
-        return $this->scopeConfig->getValue(
-            'payment/iyzipay/webhook_url_key_active',
-            $this->getScopeInterface(),
-            $this->getWebsiteId()
-        );
-    }
-
-
-    /**
      * Get Sandbox Status
      *
      * @return mixed

@@ -69,52 +69,9 @@ class IyzipayWebhookField extends Field
         $baseUrl = $this->configHelper->getWebsiteBaseUrl($websiteId);
 
         if ($webhookUrlKey) {
-            return $baseUrl.'rest/V1/iyzico/webhook/'.$webhookUrlKey.'<br>'.$this->getWebhookSubmitButtonHtml();
+            return $baseUrl . 'rest/V1/iyzico/webhook/' . $webhookUrlKey;
         } else {
             return 'Clear cookies and then push the "Save Config" button';
         }
-    }
-
-
-    /**
-     * Generate webhook submit button HTML
-     *
-     * @return string
-     * @throws LocalizedException
-     */
-    public function getWebhookSubmitButtonHtml(): string
-    {
-        $isWebhookButtonActive = $this->configHelper->getWebhookUrlKeyActive();
-
-        if ($isWebhookButtonActive == 2) {
-            $htmlButton = '<form action="#" method="post">
-                           <button class="btn btn-light" type="submit" name="button">Activate</button>
-                           <a href="mailto:integration@vendor.com">integration@vendor.com</a>
-                           </form>';
-
-            $postData = $this->getRequest()->getPost();
-
-            if ($postData) {
-                $this->deactivateWebhookButton();
-            }
-
-            return $htmlButton;
-        }
-        return '';
-    }
-
-    /**
-     * Deactivate Webhook Button
-     *
-     * @return void
-     */
-    protected function deactivateWebhookButton(): void
-    {
-        $objectManager = ObjectManager::getInstance();
-        $resource = $objectManager->get('Magento\Framework\App\ResourceConnection');
-        $connection = $resource->getConnection();
-        $tableName = $resource->getTableName('core_config_data');
-        $sql = "UPDATE ".$tableName." SET value = '0' WHERE scope = 'websites' AND path = 'payment/iyzipay/webhook_url_key_active'";
-        $connection->query($sql);
     }
 }

@@ -57,7 +57,6 @@ class IyzipayConfigSaveBefore implements ObserverInterface
     public function execute(Observer $observer): void
     {
         $this->webhookUrlKey();
-        $this->webhookSetControll();
 
         $postData = $this->request->getPostValue();
 
@@ -118,27 +117,4 @@ class IyzipayConfigSaveBefore implements ObserverInterface
             );
         }
     }
-
-    /**
-     * Webhook Set Controll
-     *
-     * This method webhook is active control after save config
-     *
-     * @throws LocalizedException
-     */
-    private function webhookSetControll(): void
-    {
-        $websiteId = $this->configHelper->getWebsiteId();
-        $webhookActive = $this->configHelper->getWebhookUrlKeyActive();
-
-        if (!$webhookActive) {
-            $this->configWriter->save(
-                'payment/iyzipay/webhook_url_key_active',
-                '0',
-                ScopeInterface::SCOPE_WEBSITES,
-                $websiteId
-            );
-        }
-    }
-
 }
