@@ -386,6 +386,20 @@ class UtilityHelper
             $ordersByPaymentAndStatus['orderJobStatus'] = 'pending_payment';
         }
 
+        if ($responsePaymentStatus == 'CHECKOUT_FORM_AUTH' && $responseStatus == 'SUCCESS') {
+            $ordersByPaymentAndStatus['state'] = 'processing';
+            $ordersByPaymentAndStatus['status'] = 'processing';
+            $ordersByPaymentAndStatus['comment'] = __('SUCCESS');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'processing';
+        }
+
+        if ($responsePaymentStatus == 'BALANCE' && $responseStatus == 'SUCCESS') {
+            $ordersByPaymentAndStatus['state'] = 'processing';
+            $ordersByPaymentAndStatus['status'] = 'processing';
+            $ordersByPaymentAndStatus['comment'] = __('SUCCESS');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'processing';
+        }
+
         if ($responsePaymentStatus == 'SUCCESS' && $responseStatus == 'SUCCESS') {
             $ordersByPaymentAndStatus['state'] = 'processing';
             $ordersByPaymentAndStatus['status'] = 'processing';
