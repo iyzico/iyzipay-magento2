@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
     <event name="admin_system_config_changed_section_payment">
-        <observer name="iyzico_config_assign" instance="Iyzico\Iyzipay\Observer\IyzipayConfigSaveBefore" />
-        <observer name="iyzico_update_cron_schedule" instance="Iyzico\Iyzipay\Observer\UpdateCronSchedule" />
+        <observer name="iyzico_config_assign" instance="Iyzico\Iyzipay\Observer\IyzipayConfigSaveBefore"/>
+        <observer name="iyzico_update_cron_schedule" instance="Iyzico\Iyzipay\Observer\UpdateCronSchedule"/>
     </event>
 </config>

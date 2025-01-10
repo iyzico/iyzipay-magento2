@@ -26,6 +26,7 @@ use Iyzico\Iyzipay\Helper\CronHelper;
 use Iyzico\Iyzipay\Logger\IyziCronLogger;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
+use Magento\Framework\Exception\LocalizedException;
 
 class UpdateCronSchedule implements ObserverInterface
 {
@@ -38,14 +39,17 @@ class UpdateCronSchedule implements ObserverInterface
     /**
      * Execute observer
      *
-     * This method is called when the event specified in the events.xml file is triggered.
-     *
      * @param  Observer  $observer
      * @return void
+     * @throws LocalizedException
      */
     public function execute(Observer $observer): void
     {
-        $newSchedule = $this->cronHelper->getCronSchedule();
-        $this->logger->info('Cron schedule updated: '.$newSchedule);
+        try {
+            $newSchedule = $this->cronHelper->getCronSchedule();
+            $this->logger->info('Cron schedule updated: '.$newSchedule);
+        } catch (LocalizedException $e) {
+            $this->logger->error('Cron schedule update failed: '.$e->getMessage());
+        }
     }
 }

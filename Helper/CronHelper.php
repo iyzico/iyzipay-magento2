@@ -34,7 +34,7 @@ class CronHelper
     /**
      * @throws LocalizedException
      */
-    public function getCronSchedule()
+    public function getCronSchedule(): string
     {
         $commonSettings = $this->configHelper->getCommonCronSettings();
         if ($commonSettings && $commonSettings !== 'custom') {
@@ -43,7 +43,7 @@ class CronHelper
         }
 
         $customCronSettings = $this->configHelper->getCustomCronSettings();
-        if ($customCronSettings) {
+        if (!empty($customCronSettings)) {
             $this->configHelper->setCronSettings($customCronSettings);
             return $customCronSettings;
         }

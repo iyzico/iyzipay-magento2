@@ -269,25 +269,25 @@ class ConfigHelper
     {
         return $this->scopeConfig->getValue(
             'payment/iyzipay/custom_cron_settings',
-            $this->getScopeInterface(),
-            $this->getWebsiteId()
+            ScopeInterface::SCOPE_STORES,
+            $this->storeManager->getStore()->getId()
         );
     }
 
     /**
      * Set Cron Settings
      *
-     * @param $value
+     * @param  string  $value
      * @return void
      * @throws LocalizedException
      */
-    public function setCronSettings($value): void
+    public function setCronSettings(string $value): void
     {
         $this->configWriter->save(
             'crontab/default/jobs/iyzico_process_pending_orders/schedule/cron_expr',
             $value,
-            $this->getScopeInterface(),
-            $this->getWebsiteId()
+            ScopeInterface::SCOPE_STORES,
+            $this->storeManager->getStore()->getId()
         );
     }
 }
