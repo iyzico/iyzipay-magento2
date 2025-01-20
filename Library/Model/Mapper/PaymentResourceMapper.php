@@ -93,6 +93,9 @@ class PaymentResourceMapper extends IyzipayResourceMapper
         if (isset($jsonObject->mdStatus)) {
             $paymentResource->setMdStatus($jsonObject->mdStatus);
         }
+        if (isset($jsonObject->referenceCode)) {
+            $paymentResource->setReferenceCode($jsonObject->referenceCode);
+        }
         return $paymentResource;
     }
 

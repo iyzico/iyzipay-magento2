@@ -32,6 +32,7 @@ class PaymentResource extends IyzipayResource
     private $posOrderId;
     private $signature;
     private $mdStatus;
+    private $referenceCode;
 
     public function getPrice()
     {
@@ -291,5 +292,15 @@ class PaymentResource extends IyzipayResource
     public function setMdStatus($mdStatus)
     {
         $this->mdStatus = $mdStatus;
+    }
+
+    public function getReferenceCode()
+    {
+        return $this->referenceCode;
+    }
+
+    public function setReferenceCode($referenceCode)
+    {
+         $this->referenceCode = $referenceCode;
     }
 }
