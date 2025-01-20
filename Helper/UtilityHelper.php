@@ -406,13 +406,22 @@ class UtilityHelper
             $ordersByPaymentAndStatus['comment'] = __('SUCCESS');
             $ordersByPaymentAndStatus['orderJobStatus'] = 'processing';
         }
-
-        if ($responsePaymentStatus == 'FAILURE') {
+        /* Missing For Card Failure*/
+        if ($responsePaymentStatus == 'FAILURE' && $responseStatus == 'SUCCESS') {
             $ordersByPaymentAndStatus['state'] = 'canceled';
             $ordersByPaymentAndStatus['status'] = 'canceled';
             $ordersByPaymentAndStatus['comment'] = __('FAILURE');
             $ordersByPaymentAndStatus['orderJobStatus'] = 'canceled';
         }
+        /* Variable changed from $responsePaymentStatus to $responseStatus*/
+        if ($responseStatus == 'FAILURE') {
+            $ordersByPaymentAndStatus['state'] = 'canceled';
+            $ordersByPaymentAndStatus['status'] = 'canceled';
+            $ordersByPaymentAndStatus['comment'] = __('FAILURE');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'canceled';
+        }
+
+
 
         return $ordersByPaymentAndStatus;
     }
