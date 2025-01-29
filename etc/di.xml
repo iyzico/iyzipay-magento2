@@ -22,24 +22,25 @@
     </type>
 
     <!-- Value handlers infrastructure -->
-    <type name="Magento\Payment\Gateway\Config\ValueHandlerPool">
+    <virtualType name="IyzicoValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
         <arguments>
             <argument name="handlers" xsi:type="array">
-                <item name="default" xsi:type="string">Magento\Payment\Gateway\Config\ConfigValueHandler</item>
+                <item name="default" xsi:type="string">IyzicoConfigValueHandler</item>
             </argument>
         </arguments>
-    </type>
+    </virtualType>
 
     <!-- Config value handler -->
-    <type name="Magento\Payment\Gateway\Config\ConfigValueHandler">
+    <virtualType name="IyzicoConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
         <arguments>
-            <argument name="configInterface" xsi:type="object">Magento\Payment\Gateway\Config\Config</argument>
+            <argument name="configInterface" xsi:type="object">Iyzico\Iyzipay\Gateway\Config\Config</argument>
         </arguments>
-    </type>
+    </virtualType>
 
     <!-- IyzipayOrderIdentity -->
     <type name="Magento\Sales\Model\Order\Email\Container\OrderIdentity">
-        <plugin name="iyzico_order_email" type="Iyzico\Iyzipay\Plugin\Order\Email\Container\IyzipayOrderIdentity"/>
+        <plugin name="iyzico_order_email" type="Iyzico\Iyzipay\Plugin\Order\Email\Container\IyzipayOrderIdentity"
+                disabled="true"/>
     </type>
 
     <!-- IyzipaySubtotal -->
