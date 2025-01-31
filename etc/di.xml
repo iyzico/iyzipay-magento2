@@ -22,20 +22,21 @@
     </type>
 
     <!-- Value handlers infrastructure -->
-    <virtualType name="IyzicoValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+    <type name="Magento\Payment\Gateway\Config\ValueHandlerPool">
         <arguments>
             <argument name="handlers" xsi:type="array">
-                <item name="default" xsi:type="string">IyzicoConfigValueHandler</item>
+                <item name="default" xsi:type="string">Magento\Payment\Gateway\Config\ConfigValueHandler</item>
             </argument>
         </arguments>
-    </virtualType>
+    </type>
 
     <!-- Config value handler -->
-    <virtualType name="IyzicoConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+    <type name="Magento\Payment\Gateway\Config\ConfigValueHandler">
         <arguments>
-            <argument name="configInterface" xsi:type="object">Iyzico\Iyzipay\Gateway\Config\Config</argument>
+            <argument name="configInterface" xsi:type="object">Magento\Payment\Gateway\Config\Config</argument>
         </arguments>
-    </virtualType>
+    </type>
+
 
     <!-- IyzipayOrderIdentity -->
     <type name="Magento\Sales\Model\Order\Email\Container\OrderIdentity">
