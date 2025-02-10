@@ -7,36 +7,35 @@
             <argument name="code" xsi:type="const">Iyzico\Iyzipay\Model\Ui\ConfigProvider::CODE</argument>
             <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form</argument>
             <argument name="infoBlockType" xsi:type="string">Magento\Payment\Block\Info</argument>
-            <argument name="valueHandlerPool" xsi:type="object">Magento\Payment\Gateway\Config\ValueHandlerPool</argument>
-            <argument name="configValueHandler" xsi:type="object">Magento\Payment\Gateway\Config\ConfigValueHandler</argument>
+            <argument name="valueHandlerPool" xsi:type="object">IyzipayValueHandlerPool</argument>
         </arguments>
     </virtualType>
 
+
     <!-- Configuration reader -->
-    <type name="Magento\Payment\Gateway\Config\Config">
+    <virtualType name="IyzipayConfig" type="Magento\Payment\Gateway\Config\Config">
         <arguments>
-            <argument name="methodCode" xsi:type="const">
-                Iyzico\Iyzipay\Model\Ui\ConfigProvider::CODE
-            </argument>
+            <argument name="methodCode" xsi:type="const">Iyzico\Iyzipay\Model\Ui\ConfigProvider::CODE</argument>
         </arguments>
-    </type>
+    </virtualType>
+
 
     <!-- Value handlers infrastructure -->
-    <type name="Magento\Payment\Gateway\Config\ValueHandlerPool">
+    <virtualType name="IyzipayValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
         <arguments>
+            <argument name="configInterface" xsi:type="object">IyzipayConfig</argument>
             <argument name="handlers" xsi:type="array">
-                <item name="default" xsi:type="string">Magento\Payment\Gateway\Config\ConfigValueHandler</item>
+                <item name="default" xsi:type="string">IyzipayConfigValueHandler</item>
             </argument>
         </arguments>
-    </type>
+    </virtualType>
 
     <!-- Config value handler -->
-    <type name="Magento\Payment\Gateway\Config\ConfigValueHandler">
+    <virtualType name="IyzipayConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
         <arguments>
-            <argument name="configInterface" xsi:type="object">Magento\Payment\Gateway\Config\Config</argument>
+            <argument name="configInterface" xsi:type="object">IyzipayConfig</argument>
         </arguments>
-    </type>
-
+    </virtualType>
 
     <!-- IyzipayOrderIdentity -->
     <type name="Magento\Sales\Model\Order\Email\Container\OrderIdentity">
