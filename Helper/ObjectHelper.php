@@ -26,13 +26,14 @@ use Iyzico\Iyzipay\Library\Model\Address;
 use Iyzico\Iyzipay\Library\Model\BasketItem;
 use Iyzico\Iyzipay\Library\Model\BasketItemType;
 use Iyzico\Iyzipay\Library\Model\Buyer;
+use Magento\Framework\Math\Random;
 
 class ObjectHelper
 {
     public function __construct(
-        private UtilityHelper $utilityHelper
-    ) {
-    }
+        private UtilityHelper $utilityHelper,
+        private Random $rand
+    ) {}
 
     public function createBasketItems($checkoutSession): array
     {
@@ -57,7 +58,7 @@ class ObjectHelper
             if ($shipping && $shipping != '0' && $shipping != '0.0' && $shipping != '0.00') {
                 $shippingBasketItem = new BasketItem();
 
-                $shippingBasketItem->setId((string) rand());
+                $shippingBasketItem->setId("CargoId");
                 $shippingBasketItem->setPrice($this->utilityHelper->parsePrice($shipping));
                 $shippingBasketItem->setName("Cargo");
                 $shippingBasketItem->setCategory1("Cargo");
@@ -72,6 +73,7 @@ class ObjectHelper
 
     public function createBuyer($checkoutSession): Buyer
     {
+        $uuid = $this->rand->getUniqueHash();
         $billingAddress = $checkoutSession->getBillingAddress();
 
         $name = is_null($billingAddress->getName()) ? "UNKNOWN" : $billingAddress->getName();
@@ -85,7 +87,7 @@ class ObjectHelper
         $email = is_null($billingAddress->getEmail()) ? "UNKNOWN" : $billingAddress->getEmail();
 
         $buyer = new Buyer();
-        $buyer->setId(md5($email));
+        $buyer->setId($uuid);
         $buyer->setName($this->utilityHelper->validateString($name));
         $buyer->setSurname($this->utilityHelper->validateString($surname));
         $buyer->setIdentityNumber($identityNumber);
