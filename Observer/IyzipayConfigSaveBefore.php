@@ -32,6 +32,7 @@ use Magento\Framework\App\Request\Http;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Math\Random;
 use Magento\Store\Model\ScopeInterface;
 
 
@@ -41,7 +42,8 @@ class IyzipayConfigSaveBefore implements ObserverInterface
         protected UtilityHelper $utilityHelper,
         protected ConfigHelper $configHelper,
         protected WriterInterface $configWriter,
-        protected Http $request
+        protected Http $request,
+        protected Random $rand
     ) {
     }
 
@@ -69,11 +71,12 @@ class IyzipayConfigSaveBefore implements ObserverInterface
             $locale = $this->configHelper->getLocale();
             $cutLocale = $this->utilityHelper->cutLocale($locale);
             $position = $postData['groups']['iyzipay']['fields']['overlayscript']['value'] ?? $this->configHelper->getOverlayScript();
+            $uuid = $this->rand->getUniqueHash();
 
             if ($position != null) {
                 $request = new RetrieveProtectedOverleyScriptRequest();
                 $request->setLocale($cutLocale);
-                $request->setConversationId(rand(100000, 99999999));
+                $request->setConversationId($uuid);
                 $request->setPosition($position);
 
                 $options = new Options();
