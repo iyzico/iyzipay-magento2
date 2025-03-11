@@ -109,9 +109,10 @@ class IyzipayConfigSaveBefore implements ObserverInterface
     {
         $websiteId = $this->configHelper->getWebsiteId();
         $webhookUrlKey = $this->configHelper->getWebhookUrlKey();
+        $uuid = $this->rand->getUniqueHash();
 
         if (!$webhookUrlKey) {
-            $webhookUrlKeyUniq = substr(base64_encode(time().mt_rand()), 15, 6);
+            $webhookUrlKeyUniq = substr(base64_encode(time().$uuid), 15, 6);
             $this->configWriter->save(
                 'payment/iyzipay/webhook_url_key',
                 $webhookUrlKeyUniq,
