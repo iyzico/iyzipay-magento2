@@ -3,18 +3,37 @@
 namespace Iyzico\Iyzipay\Controller\Response;
 
 
+use Exception;
+use Iyzico\Iyzipay\Helper\IyzicoHelper;
+use Iyzico\Iyzipay\Model\IyziCardFactory;
+use Iyzico\Iyzipay\Model\IyziOrderFactory;
 use Iyzipay\Model\CheckoutForm;
 use Iyzipay\Options;
 use Iyzipay\Request\RetrieveCheckoutFormRequest;
+use Magento\Checkout\Api\GuestPaymentInformationManagementInterface;
+use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Checkout\Model\Type\Onepage;
+use Magento\Customer\Model\Session;
+use Magento\Framework\App\Action\Action;
+use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\ObjectManager;
+use Magento\Framework\App\Request\Http;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Controller\ResultFactory;
+use Magento\Framework\Json\EncoderInterface;
+use Magento\Framework\Message\ManagerInterface;
+use Magento\Framework\View\Result\PageFactory;
+use Magento\Quote\Api\CartManagementInterface;
+use Magento\Quote\Api\CartRepositoryInterface;
+use Magento\Quote\Model\Quote;
+use Magento\Store\Model\StoreManagerInterface;
 
 
-class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface
+class IyzicoCheckoutForm extends Action implements CsrfAwareActionInterface
 {
 
     protected $_context;
@@ -36,36 +55,25 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
     protected $_storeManager;
     protected $_helper;
 
-
-    public function createCsrfValidationException(RequestInterface $request): ?InvalidRequestException
-    {
-        return null;
-    }
-
-    public function validateForCsrf(RequestInterface $request): ?bool
-    {
-        return true;
-    }
-
     public function __construct(
-        \Magento\Framework\App\Action\Context                            $context,
-        \Magento\Framework\Json\EncoderInterface                         $encoder,
-        \Magento\Framework\View\Result\PageFactory                       $pageFactory,
-        \Magento\Checkout\Model\Session                                  $checkoutSession,
-        \Magento\Customer\Model\Session                                  $customerSession,
-        \Magento\Quote\Model\Quote                                       $quote,
-        \Magento\Quote\Api\CartManagementInterface                       $cartManagement,
-        \Magento\Framework\Controller\ResultFactory                      $resultFactory,
-        \Magento\Framework\Controller\Result\JsonFactory                 $resultJsonFactory,
-        \Magento\Quote\Api\CartRepositoryInterface                       $quoteRepository,
-        \Magento\Framework\App\Config\ScopeConfigInterface               $scopeConfig,
-        \Iyzico\Iyzipay\Model\IyziOrderFactory                           $iyziOrderFactory,
-        \Iyzico\Iyzipay\Model\IyziCardFactory                            $iyziCardFactory,
-        \Magento\Framework\App\Request\Http                              $request,
-        \Magento\Framework\Message\ManagerInterface                      $messageManager,
-        \Magento\Checkout\Api\GuestPaymentInformationManagementInterface $guestCartManagement,
-        \Magento\Store\Model\StoreManagerInterface                       $storeManager,
-        \Iyzico\Iyzipay\Helper\IyzicoHelper                              $helper
+        Context                                    $context,
+        EncoderInterface                           $encoder,
+        PageFactory                                $pageFactory,
+        CheckoutSession                            $checkoutSession,
+        Session                                    $customerSession,
+        Quote                                      $quote,
+        CartManagementInterface                    $cartManagement,
+        ResultFactory                              $resultFactory,
+        JsonFactory                                $resultJsonFactory,
+        CartRepositoryInterface                    $quoteRepository,
+        ScopeConfigInterface                       $scopeConfig,
+        IyziOrderFactory                           $iyziOrderFactory,
+        IyziCardFactory                            $iyziCardFactory,
+        Http                                       $request,
+        ManagerInterface                           $messageManager,
+        GuestPaymentInformationManagementInterface $guestCartManagement,
+        StoreManagerInterface                      $storeManager,
+        IyzicoHelper                               $helper
 
 
     )
@@ -92,6 +100,15 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
 
     }
 
+    public function createCsrfValidationException(RequestInterface $request): ?InvalidRequestException
+    {
+        return null;
+    }
+
+    public function validateForCsrf(RequestInterface $request): ?bool
+    {
+        return true;
+    }
 
     public function execute()
     {
@@ -125,7 +142,7 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
                 $token = $webhookToken;
                 $conversationId = $webhookPaymentConversationId;
             } else {
-                $token = $postData['token']; /* Add Filterr */
+                $token = $postData['token'];
             }
 
             $customerId = 0;
@@ -182,15 +199,12 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
                 }
             }
 
-            /* webhook order update credit */
             if ($webhook == 'webhook') {
-
                 $tableName = $resource->getTableName('sales_order');
                 $sql = "Select * FROM " . $tableName . " Where quote_id = " . $response->getBasketId();
                 $result = $connection->fetchAll($sql);
                 $entity_id = $result[0]['entity_id'];
                 $order = $objectManager->create('\Magento\Sales\Model\Order')->load($entity_id);
-
 
                 if ($webhookIyziEventType == 'CREDIT_PAYMENT_PENDING' && $response->getPaymentStatus() == 'PENDING_CREDIT') {
                     $order->setState('pending');
@@ -199,8 +213,8 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
                     $order->addStatusHistoryComment($historyComment);
                     $order->save();
                     return 'ok';
-
                 }
+
                 if ($webhookIyziEventType == 'CREDIT_PAYMENT_AUTH' && $response->getStatus() == 'success') {
                     $order->setState('processing');
                     $order->setStatus('processing');
@@ -210,6 +224,7 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
                     return 'ok';
 
                 }
+                
                 if ($webhookIyziEventType == 'CREDIT_PAYMENT_INIT' && $response->getStatus() == 'INIT_CREDIT') {
                     $order->setState('pending');
                     $order->setStatus('pending');
@@ -351,7 +366,7 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
                     $this->_quote->setCustomerEmail($this->_customerSession->getEmail());
                     $this->_cartManagement->placeOrder($response->getBasketId());
                     return $this->webhookHttpResponse("Order Created by Webhook - Sipariş webhook tarafından oluşturuldu.", 200);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     return $this->webhookHttpResponse("Order Created by Webhook - Sipariş webhook tarafından oluşturuldu.", 200);
                 }
 
@@ -368,7 +383,7 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action implements
 
             $resultRedirect->setPath('checkout/onepage/success', ['_secure' => true]);
             return $resultRedirect;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             if ($webhook == 'webhook') {
                 return $this->webhookHttpResponse($response->getErrorCode() . '-' . $response->getErrorMessage(), 404);
             }

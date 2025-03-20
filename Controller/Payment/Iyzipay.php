@@ -21,29 +21,30 @@
 
 namespace Iyzico\Iyzipay\Controller\Payment;
 
-class Iyzipay extends \Magento\Framework\App\Action\Action
+use Magento\Framework\App\Action\Action;
+use Magento\Framework\App\Action\Context;
+use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\View\Result\PageFactory;
+
+class Iyzipay extends Action
 {
 
     protected $resultPageFactory;
 
     /**
      * Constructor
-     *
-     * @param \Magento\Framework\App\Action\Context  $context
-     * @param \Magento\Framework\View\Result\PageFactory $resultPageFactory
+     * @param Context $context
+     * @param PageFactory $resultPageFactory
      */
-    public function __construct(
-        \Magento\Framework\App\Action\Context $context,
-        \Magento\Framework\View\Result\PageFactory $resultPageFactory
-    ) {
+    public function __construct(Context $context, PageFactory $resultPageFactory)
+    {
         $this->resultPageFactory = $resultPageFactory;
         parent::__construct($context);
     }
 
     /**
      * Execute view action
-     *
-     * @return \Magento\Framework\Controller\ResultInterface
+     * @return ResultInterface
      */
     public function execute()
     {

@@ -30,6 +30,7 @@ use Iyzipay\Request\CreateCheckoutFormInitializeRequest;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Customer\Api\Data\GroupInterface;
 use Magento\Customer\Model\Session as CustomerSession;
+use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ObjectManager;
@@ -39,7 +40,7 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
 
-class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action
+class IyzicoCheckoutForm extends Action
 {
 
     protected $_context;
@@ -158,6 +159,18 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action
         $this->getResponse()->representJson($result);
     }
 
+    private function checkAndSetCookieSameSite()
+    {
+        $checkCookieNames = array('PHPSESSID', 'OCSESSID', 'default', 'PrestaShop-', 'wp_woocommerce_session_');
+        foreach ($_COOKIE as $cookieName => $value) {
+            foreach ($checkCookieNames as $checkCookieName) {
+                if (stripos($cookieName, $checkCookieName) === 0) {
+                    $this->setcookieSameSite($cookieName, $_COOKIE[$cookieName], time() + 86400, "/", $_SERVER['SERVER_NAME'], true, true);
+                }
+            }
+        }
+    }
+
     private function setcookieSameSite($name, $value, $expire, $path, $domain, $secure, $httponly)
     {
         if (PHP_VERSION_ID < 70300) {
@@ -173,18 +186,6 @@ class IyzicoCheckoutForm extends \Magento\Framework\App\Action\Action
             ]);
 
 
-        }
-    }
-
-    private function checkAndSetCookieSameSite()
-    {
-        $checkCookieNames = array('PHPSESSID', 'OCSESSID', 'default', 'PrestaShop-', 'wp_woocommerce_session_');
-        foreach ($_COOKIE as $cookieName => $value) {
-            foreach ($checkCookieNames as $checkCookieName) {
-                if (stripos($cookieName, $checkCookieName) === 0) {
-                    $this->setcookieSameSite($cookieName, $_COOKIE[$cookieName], time() + 86400, "/", $_SERVER['SERVER_NAME'], true, true);
-                }
-            }
         }
     }
 
