@@ -12,7 +12,7 @@ use Iyzipay\Options;
 use Iyzipay\Request\RetrieveCheckoutFormRequest;
 use Magento\Checkout\Api\GuestPaymentInformationManagementInterface;
 use Magento\Checkout\Model\Session as CheckoutSession;
-use Magento\Checkout\Model\Type\Onepage;
+use Magento\Store\Model\ScopeInterface;
 use Magento\Customer\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
