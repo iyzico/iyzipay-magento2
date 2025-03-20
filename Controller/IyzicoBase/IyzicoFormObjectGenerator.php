@@ -21,164 +21,166 @@
 
 namespace Iyzico\Iyzipay\Controller\IyzicoBase;
 
-use stdClass;
 use Iyzico\Iyzipay\Helper\IyzicoHelper;
+use stdClass;
 
 class IyzicoFormObjectGenerator
 {
-	 protected $helper;
+    protected $helper;
 
-	 public function __construct() {
+    public function __construct()
+    {
+        $this->helper = new IyzicoHelper();
+    }
 
-	 	$this->helper = new IyzicoHelper();
-	 }
+    public function generateOption($checkoutSession, $cardUserKey, $locale, $currency, $cardId, $callBack, $magentoVersion)
+    {
 
-	public function generateOption($checkoutSession,$cardUserKey,$locale,$currency,$cardId,$callBack,$magentoVersion) {
+        $iyzico = new stdClass();
 
-		$iyzico = new stdClass();
-		$helper = new IyzicoHelper();
+        $iyzico->locale = $this->helper->cutLocale($locale);
+        $iyzico->conversationId = "123456789";
+        $iyzico->price = $this->helper->subTotalPriceCalc($checkoutSession);
+        $iyzico->paidPrice = $this->helper->priceParser(round($checkoutSession->getGrandTotal(), 2));
+        $iyzico->currency = $currency;
+        $iyzico->basketId = $cardId;
+        $iyzico->paymentGroup = 'PRODUCT';
+        $iyzico->forceThreeDS = "0";
+        $iyzico->callbackUrl = $callBack . "Iyzico_Iyzipay/response/iyzicocheckoutform";
+        $iyzico->cardUserKey = $cardUserKey;
+        $iyzico->paymentSource = "MAGENTO2|" . $magentoVersion . "|SPACE-2.1.4";
+        $iyzico->goBackUrl = $callBack;
 
-		$iyzico->locale                       = $this->helper->cutLocale($locale);
-		$iyzico->conversationId               = "123456789";
-		$iyzico->price                        = $this->helper->subTotalPriceCalc($checkoutSession);
-		$iyzico->paidPrice                    = $this->helper->priceParser(round($checkoutSession->getGrandTotal(),2));
-		$iyzico->currency                     = $currency;
-		$iyzico->basketId                     = $cardId;
-		$iyzico->paymentGroup                 = 'PRODUCT';
-		$iyzico->forceThreeDS                 = "0";
-		$iyzico->callbackUrl                  = $callBack."Iyzico_Iyzipay/response/iyzicocheckoutform";
-		$iyzico->cardUserKey                  = $cardUserKey;
-		$iyzico->paymentSource                = "MAGENTO2|".$magentoVersion."|SPACE-2.1.4";
-		$iyzico->goBackUrl 					          = $callBack;
+        return $iyzico;
 
-		return $iyzico;
+    }
 
-	}
+    public function generateBuyer($checkoutSession, $guestEmail)
+    {
 
-	public function generateBuyer($checkoutSession,$guestEmail) {
+        $billingAddress = $checkoutSession->getBillingAddress();
 
-		$billingAddress  = $checkoutSession->getBillingAddress();
-
-		$billingStreet = false;
+        $billingStreet = false;
         foreach ($billingAddress->getStreet() as $key => $street) {
 
-            if($street)
-                $billingStreet.= $street.' ';
+            if ($street)
+                $billingStreet .= $street . ' ';
         }
 
-        if($billingAddress->getEmail()){
+        if ($billingAddress->getEmail()) {
 
-        	$email = $billingAddress->getEmail();
+            $email = $billingAddress->getEmail();
 
         } else {
 
-        	$email = $guestEmail;
+            $email = $guestEmail;
         }
 
-		$buyer = new stdClass();
+        $buyer = new stdClass();
 
-        $buyer->id                          = $billingAddress->getId();
-        $buyer->name                        = $this->helper->dataCheck($billingAddress->getName());
-        $buyer->surname                     = $this->helper->dataCheck($billingAddress->getName());
-        $buyer->identityNumber              = "11111111111";
-        $buyer->email                       = $this->helper->dataCheck($email);
-        $buyer->gsmNumber                   = $this->helper->dataCheck($billingAddress->getTelephone());
-        $buyer->registrationDate            = "2018-07-06 11:11:11";
-        $buyer->lastLoginDate               = "2018-07-06 11:11:11";
-        $buyer->registrationAddress         = $this->helper->dataCheck($billingStreet);
-        $buyer->city                        = $this->helper->dataCheck($billingAddress->getCity());
-        $buyer->country                     = $this->helper->dataCheck($billingAddress->getCountry());
-        $buyer->zipCode                     = $this->helper->dataCheck($billingAddress->getPostCode());
-        $buyer->ip                          = $_SERVER['REMOTE_ADDR'];
+        $buyer->id = $billingAddress->getId();
+        $buyer->name = $this->helper->dataCheck($billingAddress->getName());
+        $buyer->surname = $this->helper->dataCheck($billingAddress->getName());
+        $buyer->identityNumber = "11111111111";
+        $buyer->email = $this->helper->dataCheck($email);
+        $buyer->gsmNumber = $this->helper->dataCheck($billingAddress->getTelephone());
+        $buyer->registrationDate = "2018-07-06 11:11:11";
+        $buyer->lastLoginDate = "2018-07-06 11:11:11";
+        $buyer->registrationAddress = $this->helper->dataCheck($billingStreet);
+        $buyer->city = $this->helper->dataCheck($billingAddress->getCity());
+        $buyer->country = $this->helper->dataCheck($billingAddress->getCountry());
+        $buyer->zipCode = $this->helper->dataCheck($billingAddress->getPostCode());
+        $buyer->ip = $_SERVER['REMOTE_ADDR'];
 
         return $buyer;
-	}
+    }
 
-	public function generateShippingAddress($checkoutSession) {
+    public function generateShippingAddress($checkoutSession)
+    {
 
-		$shippingAddress  = $checkoutSession->getShippingAddress();
+        $shippingAddress = $checkoutSession->getShippingAddress();
 
         $shippingStreet = false;
         foreach ($shippingAddress->getStreet() as $key => $street) {
 
-            if($street)
-                $shippingStreet.= $street.' ';
+            if ($street)
+                $shippingStreet .= $street . ' ';
         }
 
-		$shippingAddressObj = new stdClass();
+        $shippingAddressObj = new stdClass();
 
-		$shippingAddressObj->address          = $this->helper->dataCheck($shippingStreet);
-		$shippingAddressObj->zipCode          = $this->helper->dataCheck($shippingAddress->getPostCode());
-		$shippingAddressObj->contactName      = $this->helper->dataCheck($shippingAddress->getName());
-		$shippingAddressObj->city             = $this->helper->dataCheck($shippingAddress->getCity());
-		$shippingAddressObj->country          = $this->helper->dataCheck($shippingAddress->getCountry());
+        $shippingAddressObj->address = $this->helper->dataCheck($shippingStreet);
+        $shippingAddressObj->zipCode = $this->helper->dataCheck($shippingAddress->getPostCode());
+        $shippingAddressObj->contactName = $this->helper->dataCheck($shippingAddress->getName());
+        $shippingAddressObj->city = $this->helper->dataCheck($shippingAddress->getCity());
+        $shippingAddressObj->country = $this->helper->dataCheck($shippingAddress->getCountry());
 
-		return $shippingAddressObj;
+        return $shippingAddressObj;
 
-	}
+    }
 
-	public function generateBillingAddress($checkoutSession) {
+    public function generateBillingAddress($checkoutSession)
+    {
 
-		$billingAddress  = $checkoutSession->getBillingAddress();
+        $billingAddress = $checkoutSession->getBillingAddress();
 
-		$billingStreet = false;
+        $billingStreet = false;
         foreach ($billingAddress->getStreet() as $key => $street) {
 
-            if($street)
-                $billingStreet.= $street.' ';
+            if ($street)
+                $billingStreet .= $street . ' ';
         }
 
-		$billingAddressObj = new stdClass();
+        $billingAddressObj = new stdClass();
 
-		$billingAddressObj->address          = $this->helper->dataCheck($billingStreet);
-		$billingAddressObj->zipCode          = $this->helper->dataCheck($billingAddress->getPostCode());
-		$billingAddressObj->contactName      = $this->helper->dataCheck($billingAddress->getName());
-		$billingAddressObj->city             = $this->helper->dataCheck($billingAddress->getCity());
-		$billingAddressObj->country          = $this->helper->dataCheck($billingAddress->getCountry());
+        $billingAddressObj->address = $this->helper->dataCheck($billingStreet);
+        $billingAddressObj->zipCode = $this->helper->dataCheck($billingAddress->getPostCode());
+        $billingAddressObj->contactName = $this->helper->dataCheck($billingAddress->getName());
+        $billingAddressObj->city = $this->helper->dataCheck($billingAddress->getCity());
+        $billingAddressObj->country = $this->helper->dataCheck($billingAddress->getCountry());
 
-		return $billingAddressObj;
-	}
+        return $billingAddressObj;
+    }
 
-	public function generateBasketItems($checkoutSession) {
+    public function generateBasketItems($checkoutSession)
+    {
 
-		$basketItems = $checkoutSession->getAllVisibleItems();
+        $basketItems = $checkoutSession->getAllVisibleItems();
 
-		$keyNumber = 0;
+        $keyNumber = 0;
 
         /* Basket Items */
-        foreach($basketItems as $key => $item) {
+        foreach ($basketItems as $key => $item) {
 
             $basketItems[$keyNumber] = new stdClass();
 
-            $basketItems[$keyNumber]->id                = $item->getProductId();
-            $basketItems[$keyNumber]->price             = $this->helper->priceParser(round($item->getPrice(),2));
-            $basketItems[$keyNumber]->name              = $this->helper->dataCheck($item->getName());
-            $basketItems[$keyNumber]->category1         = $this->helper->dataCheck($item->getName());
-            $basketItems[$keyNumber]->itemType          = "PHYSICAL";
+            $basketItems[$keyNumber]->id = $item->getProductId();
+            $basketItems[$keyNumber]->price = $this->helper->priceParser(round($item->getPrice(), 2));
+            $basketItems[$keyNumber]->name = $this->helper->dataCheck($item->getName());
+            $basketItems[$keyNumber]->category1 = $this->helper->dataCheck($item->getName());
+            $basketItems[$keyNumber]->itemType = "PHYSICAL";
 
             $keyNumber++;
         }
 
         $shipping = $checkoutSession->getShippingAddress()->getShippingAmount();
 
-		if($shipping && $shipping != '0' && $shipping != '0.0' && $shipping != '0.00' && $shipping != false) {
+        if ($shipping && $shipping != '0' && $shipping != '0.0' && $shipping != '0.00' && $shipping != false) {
 
-			$endKey = count($basketItems);
+            $endKey = count($basketItems);
 
-			$basketItems[$endKey] = new stdClass();
+            $basketItems[$endKey] = new stdClass();
 
-			$basketItems[$endKey]->id                = rand();
-			$basketItems[$endKey]->price             = $this->helper->priceParser($shipping);
-			$basketItems[$endKey]->name              = "Cargo";
-			$basketItems[$endKey]->category1         = "Cargo";
-			$basketItems[$endKey]->itemType          = "PHYSICAL";
+            $basketItems[$endKey]->id = rand();
+            $basketItems[$endKey]->price = $this->helper->priceParser($shipping);
+            $basketItems[$endKey]->name = "Cargo";
+            $basketItems[$endKey]->category1 = "Cargo";
+            $basketItems[$endKey]->itemType = "PHYSICAL";
 
-		}
+        }
 
         return $basketItems;
-	}
-
-
+    }
 
 
 }
