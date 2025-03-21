@@ -145,6 +145,7 @@ class IyzicoCheckoutForm extends Action
         $request->setBuyer($buyer);
         $request->setBillingAddress($billingAddress);
         $request->setShippingAddress($shippingAddress);
+        $request->setBasketId($cardId);
         $request->setBasketItems($basketItems);
 
         $response = CheckoutFormInitialize::create($request, $options);
