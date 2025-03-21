@@ -258,6 +258,7 @@ class IyzicoCheckoutForm extends Action implements CsrfAwareActionInterface
             $iyziOrderModel->setData('total_amount', $response->getPaidPrice());
             $iyziOrderModel->setData('order_id', $response->getBasketId());
             $iyziOrderModel->setData('status', $status);
+            $iyziOrderModel->save();
             $tableName = $resource->getTableName('iyzico_order');
             $connection->insert($tableName, $iyziOrderModel->getData());
 
@@ -344,6 +345,7 @@ class IyzicoCheckoutForm extends Action implements CsrfAwareActionInterface
                         $iyziCardModel->setData('customer_id', $customerId);
                         $iyziCardModel->setData('card_user_key', $response->getCardUserKey());
                         $iyziCardModel->setData('api_key', $apiKey);
+                        $iyziCardModel->save();
                         $tableName = $resource->getTableName('iyzico_card');
                         $connection->insert($tableName, $iyziCardModel->getData());
                     }
