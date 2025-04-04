@@ -30,12 +30,10 @@ use Iyzico\Iyzipay\Logger\IyziWebhookLogger;
 use Iyzico\Iyzipay\Model\Data\WebhookData;
 use Iyzico\Iyzipay\Service\OrderJobService;
 use Iyzico\Iyzipay\Service\OrderService;
-use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NotFoundException;
-use Magento\Sales\Api\OrderPaymentRepositoryInterface;
 
 class Webhook implements WebhookInterface
 {
@@ -43,14 +41,13 @@ class Webhook implements WebhookInterface
     protected WebhookData $webhookData;
 
     public function __construct(
-        protected RequestInterface $request,
-        protected ConfigHelper $configHelper,
-        protected UtilityHelper $utilityHelper,
-        protected OrderService $orderService,
-        protected OrderJobService $orderJobService,
+        protected RequestInterface  $request,
+        protected ConfigHelper      $configHelper,
+        protected UtilityHelper     $utilityHelper,
+        protected OrderService      $orderService,
+        protected OrderJobService   $orderJobService,
         protected IyziWebhookLogger $iyziWebhookLogger
-    ) {
-    }
+    ) {}
 
     /**
      * @inheritDoc
@@ -115,8 +112,10 @@ class Webhook implements WebhookInterface
 
         $paymentConversationId = $json['paymentConversationId'] ?? null;
         if (empty($paymentConversationId)) {
-            $this->iyziWebhookLogger->error(sprintf('paymentConversationId is missing or empty, content: %s',
-                $content));
+            $this->iyziWebhookLogger->error(sprintf(
+                'paymentConversationId is missing or empty, content: %s',
+                $content
+            ));
             throw new LocalizedException(__('paymentConversationId is missing or empty'));
         }
 
@@ -162,14 +161,14 @@ class Webhook implements WebhookInterface
             throw new LocalizedException(__('iyziPaymentId is missing or empty'));
         }
 
-        $webhookData->setPaymentConversationId(strip_tags((string) $paymentConversationId));
-        $webhookData->setMerchantId((int) $merchantId);
-        $webhookData->setToken(strip_tags((string) $token));
-        $webhookData->setStatus(strip_tags((string) $status));
-        $webhookData->setIyziReferenceCode(strip_tags((string) $iyziReferenceCode));
-        $webhookData->setIyziEventType(strip_tags((string) $iyziEventType));
-        $webhookData->setIyziEventTime((int) $iyziEventTime);
-        $webhookData->setIyziPaymentId((int) $iyziPaymentId);
+        $webhookData->setPaymentConversationId(strip_tags((string)$paymentConversationId));
+        $webhookData->setMerchantId((int)$merchantId);
+        $webhookData->setToken(strip_tags((string)$token));
+        $webhookData->setStatus(strip_tags((string)$status));
+        $webhookData->setIyziReferenceCode(strip_tags((string)$iyziReferenceCode));
+        $webhookData->setIyziEventType(strip_tags((string)$iyziEventType));
+        $webhookData->setIyziEventTime((int)$iyziEventTime);
+        $webhookData->setIyziPaymentId((int)$iyziPaymentId);
 
         return $webhookData;
     }
@@ -179,7 +178,7 @@ class Webhook implements WebhookInterface
      */
     public function generateKey(string $secretKey, WebhookData $webhookData): string
     {
-        return $secretKey.$webhookData->getIyziEventType().$webhookData->getIyziPaymentId().$webhookData->getToken().$webhookData->getPaymentConversationId().$webhookData->getStatus();
+        return $secretKey . $webhookData->getIyziEventType() . $webhookData->getIyziPaymentId() . $webhookData->getToken() . $webhookData->getPaymentConversationId() . $webhookData->getStatus();
     }
 
     /**
@@ -215,25 +214,17 @@ class Webhook implements WebhookInterface
     {
         try {
             $paymentId = $webhookData->getIyziPaymentId();
+            $conversationId = $webhookData->getPaymentConversationId();
+            $token = $webhookData->getToken();
 
-            $objectManager = ObjectManager::getInstance();
-            $searchCriteriaBuilder = $objectManager->create(SearchCriteriaBuilder::class);
-            $orderPaymentRepository = $objectManager->create(OrderPaymentRepositoryInterface::class);
+            $orderId = $this->orderJobService->findParametersByToken($token, 'order_id');
 
-            $searchCriteria = $searchCriteriaBuilder
-                ->addFilter('last_trans_id', $paymentId)
-                ->create();
-
-            $paymentList = $orderPaymentRepository->getList($searchCriteria);
-
-            if ($paymentList->getTotalCount() === 0) {
-                throw new LocalizedException(__('Payment record not found for payment ID: %1', $paymentId));
+            if ($orderId) {
+                $this->orderService->updateOrderPaymentStatus($orderId, $webhookData, 'v3');
+                return;
             }
 
-            $payment = current($paymentList->getItems());
-            $orderId = $payment['parent_id'];
-
-            $this->orderService->updateOrderPaymentStatus($orderId, $webhookData, 'v3');
+            $this->iyziWebhookLogger->error(sprintf('Payment record not found for payment ID: %s and conversation ID: %s', $paymentId, $conversationId));
         } catch (Exception $e) {
             $this->iyziWebhookLogger->error(sprintf('Webhook process v3 error: %s', $e->getMessage()));
         }
