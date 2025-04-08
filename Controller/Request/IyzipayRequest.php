@@ -132,22 +132,38 @@ class IyzipayRequest implements ActionInterface
             $options->setSecretKey($secretKey);
 
             $response = CheckoutFormInitialize::create($request, $options);
-            $this->utilityHelper->storeSessionData($checkoutSession, $this->customerSession);
 
-            $oldOrderId = $this->orderJobService->findOrderIdByQuoteId($basketId);
+            $responseConversationId = $response->getConversationId();
+            $responseToken = $response->getToken();
+            $responseSignature = $response->getSignature();
 
-            if ($oldOrderId) {
-                $this->orderService->cancelOrder($oldOrderId);
+            $calculateSignature = $this->utilityHelper->calculateHmacSHA256Signature([
+                $responseConversationId,
+                $responseToken
+            ], $secretKey);
+
+            if ($responseSignature === $calculateSignature) {
+                $this->utilityHelper->storeSessionData($checkoutSession, $this->customerSession);
+
+                $oldOrderId = $this->orderJobService->findOrderIdByQuoteId($basketId);
+
+                if ($oldOrderId) {
+                    $this->orderService->cancelOrder($oldOrderId);
+                }
+
+                $orderId = $this->orderService->placeOrder($basketId, $this->customerSession, $this->cartManagement);
+                $this->orderJobService->saveIyziOrderJobTable($response, $basketId, $orderId);
+                return $resultJson->setData([
+                    'success' => true,
+                    'url' => $response->getPaymentPageUrl()
+                ]);
             }
 
-            $orderId = $this->orderService->placeOrder($basketId, $this->customerSession, $this->cartManagement);
-            $this->orderJobService->saveIyziOrderJobTable($response, $basketId, $orderId);
-            
             return $resultJson->setData([
-                'success' => true,
-                'url' => $response->getPaymentPageUrl()
+                'success' => false,
+                'message' => "Signature Mismatch",
+                'code' => "0"
             ]);
-           
         } catch (\Exception $e) {
             return $this->resultJsonFactory->create()->setData([
                 'success' => false,

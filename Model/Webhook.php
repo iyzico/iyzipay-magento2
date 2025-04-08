@@ -34,6 +34,8 @@ use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NotFoundException;
+use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Sales\Api\OrderPaymentRepositoryInterface;
 
 class Webhook implements WebhookInterface
 {
@@ -210,25 +212,33 @@ class Webhook implements WebhookInterface
      * @inheritDoc
      * @throws Exception
      */
-    public function processWebhookV3(WebhookData $webhookData): void
-    {
-        try {
-            $paymentId = $webhookData->getIyziPaymentId();
-            $conversationId = $webhookData->getPaymentConversationId();
-            $token = $webhookData->getToken();
+    public function processWebhookV3(WebhookData $webhookData): void 
+{
+    try {
+        $paymentId = $webhookData->getIyziPaymentId();
 
-            $orderId = $this->orderJobService->findParametersByToken($token, 'order_id');
+        $objectManager = ObjectManager::getInstance();
+        $searchCriteriaBuilder = $objectManager->create(SearchCriteriaBuilder::class);
+        $orderPaymentRepository = $objectManager->create(OrderPaymentRepositoryInterface::class);
 
-            if ($orderId) {
-                $this->orderService->updateOrderPaymentStatus($orderId, $webhookData, 'v3');
-                return;
-            }
+        $searchCriteria = $searchCriteriaBuilder
+            ->addFilter('last_trans_id', $paymentId)
+            ->create();
 
-            $this->iyziWebhookLogger->error(sprintf('Payment record not found for payment ID: %s and conversation ID: %s', $paymentId, $conversationId));
-        } catch (Exception $e) {
-            $this->iyziWebhookLogger->error(sprintf('Webhook process v3 error: %s', $e->getMessage()));
+        $paymentList = $orderPaymentRepository->getList($searchCriteria);
+
+        if ($paymentList->getTotalCount() === 0) {
+            throw new LocalizedException(__('Payment record not found for payment ID: %1', $paymentId));
         }
+
+        $payment = current($paymentList->getItems());
+        $orderId = $payment['parent_id'];
+
+        $this->orderService->updateOrderPaymentStatus($orderId, $webhookData, 'v3');
+    } catch (Exception $e) {
+        $this->iyziWebhookLogger->error(sprintf('Webhook process v3 error: %s', $e->getMessage()));
     }
+}
 
     /**
      * @inheritDoc
