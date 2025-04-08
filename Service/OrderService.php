@@ -344,8 +344,6 @@ class OrderService
         $options->setSecretKey($secretKey);
 
         $response = CheckoutForm::retrieve($request, $options);
-
-        $this->utilityHelper->validateSignature($response, $secretKey);
         
         return $response;
     }
