@@ -21,7 +21,7 @@
 				<field id="api_key" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" translate="label" type="text">
 					<label>Api Key</label>
 				</field>
-				<field id="secret_key" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" translate="label" type="text">
+				<field id="secret_key" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" translate="label" type="password">
 					<label>Secret Key</label>
 				</field>
 				<field id="title" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" translate="label" type="text">
