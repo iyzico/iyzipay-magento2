@@ -18,11 +18,13 @@
 					<label>Sandbox</label>
 					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
 				</field>
-				<field id="api_key" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" translate="label" type="text">
+				<field id="api_key" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" translate="label" type="obscure">
 					<label>Api Key</label>
+					<backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
 				</field>
-				<field id="secret_key" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" translate="label" type="password">
+				<field id="secret_key" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" translate="label" type="obscure">
 					<label>Secret Key</label>
+					<backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
 				</field>
 				<field id="title" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" translate="label" type="text">
 					<label>Title</label>
