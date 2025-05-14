@@ -43,7 +43,7 @@ class IyzipayCreditmemoTotals extends IyzipayTotals
      *
      * @var Creditmemo|null
      */
-    protected ?Creditmemo $_creditmemo;
+    protected ?Creditmemo $_creditmemo = null;
 
     /**
      * Initialize creditmemo totals array

@@ -31,5 +31,14 @@
         "constraint": {
             "PRIMARY": true
         }
+    },
+    "iyzico_installment": {
+        "column": {
+            "category_id": true,
+            "settings": true
+        },
+        "constraint": {
+            "IYZICO_INSTALLMENT_CATEGORY_ID_CATALOG_CATEGORY_ENTITY_ENTITY_ID": true
+        }
     }
 }

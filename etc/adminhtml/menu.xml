@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add
+            id="Iyzico_Iyzipay::iyzico_installment"
+            title="iyzico Installment"
+            translate="title"
+            module="Iyzico_Iyzipay"
+            parent="Magento_Backend::marketing"
+            sortOrder="50"
+            dependsOnModule="Iyzico_Iyzipay"
+            resource="Iyzico_Iyzipay::iyzico_installment"/>
+        <add
+            id="Iyzico_Iyzipay::category_installment_settings"
+            title="Category Installment Rules"
+            translate="title"
+            module="Iyzico_Iyzipay"
+            parent="Iyzico_Iyzipay::iyzico_installment"
+            sortOrder="10"
+            dependsOnModule="Iyzico_Iyzipay"
+            action="iyzico/categoryinstallmentsettings/index"
+            resource="Iyzico_Iyzipay::category_installment_settings"/>
+    </menu>
+</config>

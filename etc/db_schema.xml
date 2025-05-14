@@ -48,4 +48,21 @@
             <column name="iyzico_card_id"/>
         </constraint>
     </table>
+    <table name="iyzico_installment" resource="default" engine="innodb" comment="iyzico Installment">
+        <column xsi:type="int" name="installment_id" padding="10" unsigned="true" nullable="false" identity="true"
+                comment="Installment ID"/>
+        <column xsi:type="int" name="category_id" padding="10" unsigned="true" nullable="false" identity="false"
+                comment="Category Id"/>
+        <column xsi:type="text" name="settings" nullable="false"
+                comment="Installment Settings"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="installment_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="IYZICO_INSTALLMENT_CATEGORY_ID">
+            <column name="category_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="IYZICO_INSTALLMENT_CATEGORY_ID_CATALOG_CATEGORY_ENTITY_ID"
+                    table="iyzico_installment" column="category_id" referenceTable="catalog_category_entity"
+                    referenceColumn="entity_id" onDelete="CASCADE"/>
+    </table>
 </schema>

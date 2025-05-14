@@ -49,16 +49,17 @@ class OrderService
 {
 
     public function __construct(
-        protected OrderRepositoryInterface $orderRepository,
-        protected QuoteRepository $quoteRepository,
-        protected Quote $quoteResource,
-        protected UtilityHelper $utilityHelper,
-        protected IyziErrorLogger $errorLogger,
-        protected OrderJobService $orderJobService,
+        protected OrderRepositoryInterface    $orderRepository,
+        protected QuoteRepository             $quoteRepository,
+        protected Quote                       $quoteResource,
+        protected UtilityHelper               $utilityHelper,
+        protected IyziErrorLogger             $errorLogger,
+        protected OrderJobService             $orderJobService,
         protected ReservationBuilderInterface $reservationBuilder,
         protected AppendReservationsInterface $appendReservations,
-        protected ConfigHelper $configHelper
-    ) {
+        protected ConfigHelper                $configHelper
+    )
+    {
     }
 
     /**
@@ -69,10 +70,11 @@ class OrderService
      * @throws CouldNotSaveException|NoSuchEntityException|AlreadyExistsException
      */
     public function placeOrder(
-        int $quoteId,
-        CustomerSession $customerSession,
+        int                     $quoteId,
+        CustomerSession         $customerSession,
         CartManagementInterface $cartManagement
-    ): int {
+    ): int
+    {
         $quote = $this->quoteRepository->get($quoteId);
         if ($customerSession->isLoggedIn()) {
             $orderId = $cartManagement->placeOrder($quoteId);
@@ -102,9 +104,9 @@ class OrderService
      *
      * This function is responsible for updating the order payment status based on the response.
      *
-     * @param  string  $orderId
-     * @param  mixed  $response
-     * @param  string  $webhook
+     * @param string $orderId
+     * @param mixed $response
+     * @param string $webhook
      * @return void
      */
     public function updateOrderPaymentStatus(string $orderId, mixed $response, string $webhook = 'no'): void
@@ -125,6 +127,9 @@ class OrderService
         }
 
         $ordersByPaymentAndStatus = $this->utilityHelper->findOrderByPaymentAndStatus($paymentStatus, $status);
+
+        $arrString = implode(", ", $ordersByPaymentAndStatus);
+        $this->errorLogger->info("ordersByPaymentAndStatus: $arrString");
 
         $order->setState($ordersByPaymentAndStatus['state']);
         $order->setStatus($ordersByPaymentAndStatus['status']);
@@ -149,7 +154,7 @@ class OrderService
         }
 
         if ($webhook === 'no') {
-            $order->addCommentToStatusHistory("Payment ID: ".$response->getPaymentId()." - Conversation ID:".$response->getConversationId());
+            $order->addCommentToStatusHistory("Payment ID: " . $response->getPaymentId() . " - Conversation ID:" . $response->getConversationId());
             $this->updatePaymentAdditionalInformation($payment, $response);
         }
 
@@ -161,7 +166,7 @@ class OrderService
      *
      * This function is responsible for finding the order by id.
      *
-     * @param  string  $orderId
+     * @param string $orderId
      * @return OrderInterface|null
      */
     public function findOrderById(string $orderId): OrderInterface|null
@@ -170,7 +175,7 @@ class OrderService
             return $this->orderRepository->get($orderId);
         } catch (Exception $e) {
             $this->errorLogger->critical(
-                "findOrderById: $orderId - Message: ".$e->getMessage(),
+                "findOrderById: $orderId - Message: " . $e->getMessage(),
                 ['fileName' => __FILE__, 'lineNumber' => __LINE__]
             );
             return null;
@@ -204,14 +209,15 @@ class OrderService
      *
      * This function is responsible for updating the payment additional information.
      *
-     * @param  OrderPaymentInterface|null  $payment
-     * @param  WebhookData  $webhookData
+     * @param OrderPaymentInterface|null $payment
+     * @param WebhookData $webhookData
      * @return void
      */
     private function updatePaymentAdditionalInformationForWebhook(
         OrderPaymentInterface|null $payment,
-        WebhookData $webhookData
-    ): void {
+        WebhookData                $webhookData
+    ): void
+    {
         $payment->setLastTransId($webhookData->getIyziPaymentId());
 
         $paymentAdditionalInformation = $payment->getAdditionalInformation();
@@ -228,14 +234,15 @@ class OrderService
      *
      * This function is responsible for updating the payment additional information.
      *
-     * @param  OrderPaymentInterface|null  $payment
-     * @param  CheckoutForm  $response
+     * @param OrderPaymentInterface|null $payment
+     * @param CheckoutForm $response
      * @return void
      */
     private function updatePaymentAdditionalInformation(
         OrderPaymentInterface|null $payment,
-        CheckoutForm $response
-    ): void {
+        CheckoutForm               $response
+    ): void
+    {
         $payment->setLastTransId($response->getPaymentId());
 
         $paymentAdditionalInformation = [
@@ -256,7 +263,7 @@ class OrderService
      * Cancel Order
      * This function is responsible for canceling the order.
      *
-     * @param  string  $orderId
+     * @param string $orderId
      * @return void
      */
     public function cancelOrder(string $orderId): void
@@ -321,8 +328,8 @@ class OrderService
     /**
      * Retrieve and validate checkout form response
      *
-     * @param  string  $token
-     * @param  string  $conversationId
+     * @param string $token
+     * @param string $conversationId
      * @return CheckoutForm
      * @throws LocalizedException|LocalizedException
      */
@@ -345,8 +352,6 @@ class OrderService
 
         $response = CheckoutForm::retrieve($request, $options);
 
-        $this->utilityHelper->validateSignature($response, $secretKey);
-        
         return $response;
     }
 }

@@ -30,7 +30,9 @@ use Iyzico\Iyzipay\Logger\IyziWebhookLogger;
 use Iyzico\Iyzipay\Model\Data\WebhookData;
 use Iyzico\Iyzipay\Service\OrderJobService;
 use Iyzico\Iyzipay\Service\OrderService;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NotFoundException;
 

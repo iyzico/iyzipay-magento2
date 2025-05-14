@@ -26,13 +26,16 @@ use Iyzico\Iyzipay\Library\Model\Address;
 use Iyzico\Iyzipay\Library\Model\BasketItem;
 use Iyzico\Iyzipay\Library\Model\BasketItemType;
 use Iyzico\Iyzipay\Library\Model\Buyer;
+use Iyzico\Iyzipay\Model\ResourceModel\IyziInstallment\CollectionFactory;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Math\Random;
 
-class ObjectHelper
+readonly class ObjectHelper
 {
     public function __construct(
-        private UtilityHelper $utilityHelper,
-        private Random $rand
+        private UtilityHelper          $utilityHelper,
+        private Random                 $rand,
+        private CollectionFactory      $installmentCollectionFactory,
     ) {}
 
     public function createBasketItems($checkoutSession): array
@@ -71,6 +74,9 @@ class ObjectHelper
         return $basketItems;
     }
 
+    /**
+     * @throws LocalizedException
+     */
     public function createBuyer($checkoutSession): Buyer
     {
         $uuid = $this->rand->getUniqueHash();
@@ -104,14 +110,13 @@ class ObjectHelper
         return $buyer;
     }
 
-    public function createShippingAddress($checkoutSession): Address
+    public function createAddress($address): Address
     {
-        $checkoutShippingAddress = $checkoutSession->getShippingAddress();
-        $street = is_null($checkoutShippingAddress->getStreet()) ? "UNKNOWN" : $checkoutShippingAddress->getStreet();
-        $zipCode = is_null($checkoutShippingAddress->getPostCode()) ? "UNKNOWN" : $checkoutShippingAddress->getPostCode();
-        $contactName = is_null($checkoutShippingAddress->getName()) ? "UNKNOWN" : $checkoutShippingAddress->getName();
-        $city = is_null($checkoutShippingAddress->getCity()) ? "UNKNOWN" : $checkoutShippingAddress->getCity();
-        $country = is_null($checkoutShippingAddress->getCountry()) ? "UNKNOWN" : $checkoutShippingAddress->getCountry();
+        $street = is_null($address->getStreet()) ? "UNKNOWN" : $address->getStreet();
+        $zipCode = is_null($address->getPostCode()) ? "UNKNOWN" : $address->getPostCode();
+        $contactName = is_null($address->getName()) ? "UNKNOWN" : $address->getName();
+        $city = is_null($address->getCity()) ? "UNKNOWN" : $address->getCity();
+        $country = is_null($address->getCountry()) ? "UNKNOWN" : $address->getCountry();
 
 
         $shippingAddress = new Address();
@@ -124,23 +129,82 @@ class ObjectHelper
         return $shippingAddress;
     }
 
-    public function createBillingAddress($checkoutSession): Address
+    public function getInstallment($checkoutSession): array
     {
-        $checkoutBillingAddress = $checkoutSession->getBillingAddress();
-        $street = is_null($checkoutBillingAddress->getStreet()) ? "UNKNOWN" : $checkoutBillingAddress->getStreet();
-        $zipCode = is_null($checkoutBillingAddress->getPostCode()) ? "UNKNOWN" : $checkoutBillingAddress->getPostCode();
-        $contactName = is_null($checkoutBillingAddress->getName()) ? "UNKNOWN" : $checkoutBillingAddress->getName();
-        $city = is_null($checkoutBillingAddress->getCity()) ? "UNKNOWN" : $checkoutBillingAddress->getCity();
-        $country = is_null($checkoutBillingAddress->getCountry()) ? "UNKNOWN" : $checkoutBillingAddress->getCountry();
+        // Bu fonksiyon, sepetin tüm ürünlerinin kategorilerine göre taksit seçeneklerini döndürür.
+        // Örneğin, bir kategoride 1,2,3,8 taksit varsa, diğer kategoride 1,2,4,6 taksit varsa,
+        // Sonuç olarak 1,2,3,4,5,6 taksit seçeneklerini döndürür.
+        // iyzico ayarlarında da taksit sayısı 1,2,4,6 ise
+        // Ödeme formunda 1,2,4,6 taksit seçenekleri görünür.
+        $allPossibleInstallments = range(1, 12);
+        $categoryInstallments = [];
 
+        foreach ($checkoutSession->getAllVisibleItems() as $item) {
+            $product = $item->getProduct();
+            $productCategories = $product->getCategoryIds();
 
-        $billingAddress = new Address();
-        $billingAddress->setAddress($this->utilityHelper->validateString($street));
-        $billingAddress->setZipCode($this->utilityHelper->validateString($zipCode));
-        $billingAddress->setContactName($this->utilityHelper->validateString($contactName));
-        $billingAddress->setCity($this->utilityHelper->validateString($city));
-        $billingAddress->setCountry($this->utilityHelper->validateString($country));
+            $productInstallments = [];
+            foreach ($productCategories as $categoryId) {
+                $categoryRules = $this->getInstallmentRuleByCategoryId($categoryId);
+                if (!empty($categoryRules)) {
+                    $productInstallments = array_merge($productInstallments, $categoryRules);
+                }
+            }
 
-        return $billingAddress;
+            if (!empty($productInstallments)) {
+                $productInstallments = array_unique($productInstallments);
+                sort($productInstallments);
+                $categoryInstallments[] = $productInstallments;
+            }
+        }
+
+        if (empty($categoryInstallments)) {
+            return [];
+        }
+
+        $installmentOptions = $allPossibleInstallments;
+
+        foreach ($categoryInstallments as $options) {
+            if (empty($options)) {
+                return [];
+            }
+
+            foreach ($allPossibleInstallments as $installment) {
+                if (!in_array($installment, $options) && in_array($installment, $installmentOptions)) {
+                    $key = array_search($installment, $installmentOptions);
+                    unset($installmentOptions[$key]);
+                }
+            }
+        }
+
+        $installmentOptions = array_values(array_filter($installmentOptions));
+
+        if (empty($installmentOptions)) {
+            return [];
+        }
+
+        sort($installmentOptions);
+
+        return $installmentOptions;
+    }
+
+    public function getInstallmentRuleByCategoryId($categoryId): array
+    {
+        $collection = $this->installmentCollectionFactory->create();
+        $collection->addFieldToFilter('category_id', ['eq' => $categoryId]);
+
+        $installmentRule = $collection->getFirstItem();
+
+        if (!$installmentRule->getId()) {
+            return [];
+        }
+
+        $installmentString = $installmentRule->getSettings();
+        $installmentArray = json_decode($installmentString, true);
+        if (is_array($installmentArray)) {
+            return $installmentArray;
+        }
+
+        return [];
     }
 }

@@ -75,6 +75,8 @@
     <type name="Iyzico\Iyzipay\Helper\ObjectHelper">
         <arguments>
             <argument name="utilityHelper" xsi:type="object">Iyzico\Iyzipay\Helper\UtilityHelper</argument>
+            <argument name="rand" xsi:type="object">Magento\Framework\Math\Random</argument>
+            <argument name="installmentCollectionFactory" xsi:type="object">Iyzico\Iyzipay\Model\ResourceModel\IyziInstallment\CollectionFactory</argument>
         </arguments>
     </type>
 
@@ -97,4 +99,35 @@
 
     <!-- Webhook Model -->
     <preference for="Iyzico\Iyzipay\Api\WebhookInterface" type="Iyzico\Iyzipay\Model\Webhook"/>
+
+    <virtualType name="IyzicoInstallmentGridDataProvider" type="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider">
+        <arguments>
+            <argument name="collection" xsi:type="object" shared="false">Iyzico\Iyzipay\Model\ResourceModel\IyziInstallment\Collection</argument>
+            <argument name="filterPool" xsi:type="object" shared="false">IyzicoInstallmentGridFilterPool</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IyzicoInstallmentGridFilterPool" type="Magento\Framework\View\Element\UiComponent\DataProvider\FilterPool">
+        <arguments>
+            <argument name="appliers" xsi:type="array">
+                <item name="regular" xsi:type="object">Magento\Framework\View\Element\UiComponent\DataProvider\RegularFilter</item>
+                <item name="fulltext" xsi:type="object">Magento\Framework\View\Element\UiComponent\DataProvider\FulltextFilter</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="iyzico_category_installment_listing_data_source" xsi:type="string">Iyzico\Iyzipay\Model\ResourceModel\IyziInstallment\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <virtualType name="Iyzico\Iyzipay\Model\ResourceModel\IyziInstallment\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">iyzico_installment</argument>
+            <argument name="resourceModel" xsi:type="string">Iyzico\Iyzipay\Model\ResourceModel\IyziInstallment</argument>
+        </arguments>
+    </virtualType>
 </config>

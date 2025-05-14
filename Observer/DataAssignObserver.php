@@ -43,9 +43,9 @@ class DataAssignObserver implements ObserverInterface
         $installmentCount = $order->getInstallmentCount();
 
         if (isset($installmentCount) && $installmentCount > 1 && $paymentMethod == 'iyzipay') {
-            $getInstallmentFee = $order->getInstallmentFee();
+            $getInstallmentFee = floatval($order->getInstallmentFee());
             $installmentCount = $order->getInstallmentCount();
-            $grandTotalWithFee = $order->getGrandTotal();
+            $grandTotalWithFee = floatval($order->getGrandTotal());
             $subTotalWithFee = $order->getSubTotal();
             $currency = $order->getOrderCurrencyCode();
 
@@ -56,7 +56,7 @@ class DataAssignObserver implements ObserverInterface
             $currency = !empty($currency) ? $currency : 'N/A';
 
             $order->setBaseTotalPaid($grandTotalWithFee);
-            $order->setTotalPaid($grandTotalWithFee);
+            $order->setTotalPaid($grandTotalWithFee + $getInstallmentFee);
             $order->setSubTotalInvoiced($subTotalWithFee);
             $order->setBaseSubTotalInvoiced($subTotalWithFee);
             $order->setBaseTotalDue(0);
@@ -64,10 +64,9 @@ class DataAssignObserver implements ObserverInterface
 
             $payment = $order->getPayment();
             $payment->setBaseAmountPaid($grandTotalWithFee);
-            $payment->setAmountPaid($grandTotalWithFee);
+            $payment->setAmountPaid($grandTotalWithFee + $getInstallmentFee);
 
-            $installmentInfo = sprintf(__('Installment Info: %d Installment / %s %s'), $installmentCount,
-                $getInstallmentFee, $currency);
+            $installmentInfo = sprintf(__('Installment Info: %d Installment / %s %s'), $installmentCount, $getInstallmentFee, $currency);
 
             $order->addStatusHistoryComment($installmentInfo)->setIsVisibleOnFront(true);
         }
