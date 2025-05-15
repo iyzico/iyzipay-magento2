@@ -104,7 +104,7 @@ class IyzipayRequest implements ActionInterface
             $billingAddress = $this->objectHelper->createAddress($checkoutSession->getBillingAddress());
 
             // Configure the enabled installments
-            // Next FEATURE: $installments = $this->objectHelper->getInstallment($checkoutSession);
+            $installments = $this->objectHelper->getInstallment($checkoutSession);
 
             // Create the request
             $request = new CreateCheckoutFormInitializeRequest();
@@ -123,7 +123,7 @@ class IyzipayRequest implements ActionInterface
             $request->setBasketItems($basketItems);
             $request->setCardUserKey($cardUserKey);
             $request->setGoBackUrl($this->oneTimeUrlService->createOneTimeUrl($basketId));
-            // Next FEATURE: $request->setEnabledInstallments($installments);
+            $request->setEnabledInstallments($installments);
 
             // Create the options
             $options = new Options();
