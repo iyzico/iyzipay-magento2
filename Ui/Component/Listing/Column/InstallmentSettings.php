@@ -56,7 +56,6 @@ class InstallmentSettings extends Column
         }
 
         if (is_array($settings)) {
-            // Eğer düz bir dizi ise (direkt taksit sayıları)
             if (isset($settings[0]) && !is_array($settings[0])) {
                 $taksitler = [];
 

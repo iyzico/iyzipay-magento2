@@ -34,11 +34,16 @@
     },
     "iyzico_installment": {
         "column": {
+            "installment_id": true,
             "category_id": true,
+            "product_sku": true,
             "settings": true
         },
         "constraint": {
-            "IYZICO_INSTALLMENT_CATEGORY_ID_CATALOG_CATEGORY_ENTITY_ENTITY_ID": true
+            "PRIMARY": true,
+            "IYZICO_INSTALLMENT_CATEGORY_ID": true,
+            "IYZICO_INSTALLMENT_PRODUCT_SKU": true,
+            "IYZICO_INSTALLMENT_CATEGORY_ID_CATALOG_CATEGORY_ENTITY_ID": true
         }
     }
 }

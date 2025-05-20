@@ -110,13 +110,14 @@ readonly class ObjectHelper
         return $buyer;
     }
 
-    public function createAddress($address): Address
+    public function createShippingAddress($checkoutSession): Address
     {
-        $street = is_null($address->getStreet()) ? "UNKNOWN" : $address->getStreet();
-        $zipCode = is_null($address->getPostCode()) ? "UNKNOWN" : $address->getPostCode();
-        $contactName = is_null($address->getName()) ? "UNKNOWN" : $address->getName();
-        $city = is_null($address->getCity()) ? "UNKNOWN" : $address->getCity();
-        $country = is_null($address->getCountry()) ? "UNKNOWN" : $address->getCountry();
+        $checkoutShippingAddress = $checkoutSession->getShippingAddress();
+        $street = is_null($checkoutShippingAddress->getStreet()) ? "UNKNOWN" : $checkoutShippingAddress->getStreet();
+        $zipCode = is_null($checkoutShippingAddress->getPostCode()) ? "UNKNOWN" : $checkoutShippingAddress->getPostCode();
+        $contactName = is_null($checkoutShippingAddress->getName()) ? "UNKNOWN" : $checkoutShippingAddress->getName();
+        $city = is_null($checkoutShippingAddress->getCity()) ? "UNKNOWN" : $checkoutShippingAddress->getCity();
+        $country = is_null($checkoutShippingAddress->getCountry()) ? "UNKNOWN" : $checkoutShippingAddress->getCountry();
 
 
         $shippingAddress = new Address();
@@ -129,42 +130,66 @@ readonly class ObjectHelper
         return $shippingAddress;
     }
 
+    public function createBillingAddress($checkoutSession): Address
+    {
+        $checkoutBillingAddress = $checkoutSession->getBillingAddress();
+        $street = is_null($checkoutBillingAddress->getStreet()) ? "UNKNOWN" : $checkoutBillingAddress->getStreet();
+        $zipCode = is_null($checkoutBillingAddress->getPostCode()) ? "UNKNOWN" : $checkoutBillingAddress->getPostCode();
+        $contactName = is_null($checkoutBillingAddress->getName()) ? "UNKNOWN" : $checkoutBillingAddress->getName();
+        $city = is_null($checkoutBillingAddress->getCity()) ? "UNKNOWN" : $checkoutBillingAddress->getCity();
+        $country = is_null($checkoutBillingAddress->getCountry()) ? "UNKNOWN" : $checkoutBillingAddress->getCountry();
+
+
+        $billingAddress = new Address();
+        $billingAddress->setAddress($this->utilityHelper->validateString($street));
+        $billingAddress->setZipCode($this->utilityHelper->validateString($zipCode));
+        $billingAddress->setContactName($this->utilityHelper->validateString($contactName));
+        $billingAddress->setCity($this->utilityHelper->validateString($city));
+        $billingAddress->setCountry($this->utilityHelper->validateString($country));
+
+        return $billingAddress;
+    }
+
     public function getInstallment($checkoutSession): array
     {
-        // Bu fonksiyon, sepetin tüm ürünlerinin kategorilerine göre taksit seçeneklerini döndürür.
-        // Örneğin, bir kategoride 1,2,3,8 taksit varsa, diğer kategoride 1,2,4,6 taksit varsa,
-        // Sonuç olarak 1,2,3,4,5,6 taksit seçeneklerini döndürür.
-        // iyzico ayarlarında da taksit sayısı 1,2,4,6 ise
-        // Ödeme formunda 1,2,4,6 taksit seçenekleri görünür.
         $allPossibleInstallments = range(1, 12);
-        $categoryInstallments = [];
+        $productInstallments = [];
 
         foreach ($checkoutSession->getAllVisibleItems() as $item) {
             $product = $item->getProduct();
-            $productCategories = $product->getCategoryIds();
+            $sku = $product->getSku();
 
-            $productInstallments = [];
-            foreach ($productCategories as $categoryId) {
-                $categoryRules = $this->getInstallmentRuleByCategoryId($categoryId);
-                if (!empty($categoryRules)) {
-                    $productInstallments = array_merge($productInstallments, $categoryRules);
+            $skuInstallmentRules = $this->getInstallmentRuleByProductSku($sku);
+
+            if (!empty($skuInstallmentRules)) {
+                $productInstallments[] = $skuInstallmentRules;
+            } else {
+                // Fallback to category-based installments if no SKU rule exists
+                $productCategories = $product->getCategoryIds();
+                $categoryInstallmentRules = [];
+
+                foreach ($productCategories as $categoryId) {
+                    $categoryRules = $this->getInstallmentRuleByCategoryId($categoryId);
+                    if (!empty($categoryRules)) {
+                        $categoryInstallmentRules = array_merge($categoryInstallmentRules, $categoryRules);
+                    }
                 }
-            }
 
-            if (!empty($productInstallments)) {
-                $productInstallments = array_unique($productInstallments);
-                sort($productInstallments);
-                $categoryInstallments[] = $productInstallments;
+                if (!empty($categoryInstallmentRules)) {
+                    $categoryInstallmentRules = array_unique($categoryInstallmentRules);
+                    sort($categoryInstallmentRules);
+                    $productInstallments[] = $categoryInstallmentRules;
+                }
             }
         }
 
-        if (empty($categoryInstallments)) {
+        if (empty($productInstallments)) {
             return [];
         }
 
         $installmentOptions = $allPossibleInstallments;
 
-        foreach ($categoryInstallments as $options) {
+        foreach ($productInstallments as $options) {
             if (empty($options)) {
                 return [];
             }
@@ -186,6 +211,26 @@ readonly class ObjectHelper
         sort($installmentOptions);
 
         return $installmentOptions;
+    }
+
+    public function getInstallmentRuleByProductSku($sku): array
+    {
+        $collection = $this->installmentCollectionFactory->create();
+        $collection->addFieldToFilter('product_sku', ['eq' => $sku]);
+
+        $installmentRule = $collection->getFirstItem();
+
+        if (!$installmentRule->getId()) {
+            return [];
+        }
+
+        $installmentString = $installmentRule->getSettings();
+        $installmentArray = json_decode($installmentString, true);
+        if (is_array($installmentArray)) {
+            return $installmentArray;
+        }
+
+        return [];
     }
 
     public function getInstallmentRuleByCategoryId($categoryId): array

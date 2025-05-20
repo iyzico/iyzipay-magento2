@@ -10,7 +10,7 @@
             sortOrder="50"
             dependsOnModule="Iyzico_Iyzipay"
             resource="Iyzico_Iyzipay::iyzico_installment"/>
-        <add
+        <!-- add
             id="Iyzico_Iyzipay::category_installment_settings"
             title="Category Installment Rules"
             translate="title"
@@ -19,6 +19,16 @@
             sortOrder="10"
             dependsOnModule="Iyzico_Iyzipay"
             action="iyzico/categoryinstallmentsettings/index"
-            resource="Iyzico_Iyzipay::category_installment_settings"/>
+            resource="Iyzico_Iyzipay::category_installment_settings"/ -->
+        <add
+            id="Iyzico_Iyzipay::product_installment_settings"
+            title="Product SKU Installment Rules"
+            translate="title"
+            module="Iyzico_Iyzipay"
+            parent="Iyzico_Iyzipay::iyzico_installment"
+            sortOrder="20"
+            dependsOnModule="Iyzico_Iyzipay"
+            action="iyzico/productinstallmentsettings/index"
+            resource="Iyzico_Iyzipay::product_installment_settings"/>
     </menu>
 </config>

@@ -23,6 +23,27 @@ class IyziInstallment extends AbstractModel
     }
 
     /**
+     * Get product SKU
+     *
+     * @return string|null
+     */
+    public function getProductSku()
+    {
+        return $this->getData('product_sku');
+    }
+
+    /**
+     * Set product SKU
+     *
+     * @param string $productSku
+     * @return $this
+     */
+    public function setProductSku($productSku)
+    {
+        return $this->setData('product_sku', $productSku);
+    }
+
+    /**
      * Get category ID
      *
      * @return int|null

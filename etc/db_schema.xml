@@ -51,12 +51,17 @@
     <table name="iyzico_installment" resource="default" engine="innodb" comment="iyzico Installment">
         <column xsi:type="int" name="installment_id" padding="10" unsigned="true" nullable="false" identity="true"
                 comment="Installment ID"/>
-        <column xsi:type="int" name="category_id" padding="10" unsigned="true" nullable="false" identity="false"
+        <column xsi:type="int" name="category_id" padding="10" unsigned="true" nullable="true" identity="false"
                 comment="Category Id"/>
+        <column xsi:type="varchar" name="product_sku" nullable="true" length="64"
+                comment="Product SKU"/>
         <column xsi:type="text" name="settings" nullable="false"
                 comment="Installment Settings"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="installment_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="IYZICO_INSTALLMENT_PRODUCT_SKU">
+            <column name="product_sku"/>
         </constraint>
         <constraint xsi:type="unique" referenceId="IYZICO_INSTALLMENT_CATEGORY_ID">
             <column name="category_id"/>
