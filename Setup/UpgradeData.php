@@ -35,8 +35,24 @@ class UpgradeData implements UpgradeDataInterface
         ModuleDataSetupInterface $setup,
         ModuleContextInterface $context
     ) {
+        $setup->startSetup();
+        
         if (version_compare($context->getVersion(), "1.0.0", "<")) {
             //Your upgrade script
         }
+        
+        // Security fix: Clean up any existing API key data before column removal
+        if (version_compare($context->getVersion(), "2.1.5", "<")) {
+            $connection = $setup->getConnection();
+            $tableName = $setup->getTable('iyzico_card');
+            
+            // Check if table and api_key column exist
+            if ($connection->isTableExists($tableName) && $connection->tableColumnExists($tableName, 'api_key')) {
+                // Clear all api_key data for security
+                $connection->update($tableName, ['api_key' => ''], '1=1');
+            }
+        }
+        
+        $setup->endSetup();
     }
 }

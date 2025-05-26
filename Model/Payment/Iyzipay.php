@@ -23,7 +23,7 @@ namespace Iyzico\Iyzipay\Model\Payment;
 
 class Iyzipay extends \Magento\Payment\Model\Method\AbstractMethod
 {
-    const PLUGIN_VERSION = '2.1.4';
+    const PLUGIN_VERSION = '2.1.5';
     protected $_code = "iyzipay";
     protected $_isOffline = true;
 

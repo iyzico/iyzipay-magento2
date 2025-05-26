@@ -328,9 +328,10 @@ class IyzicoCheckoutForm extends Action implements CsrfAwareActionInterface
             /* Card Save */
             if ($customerId) {
                 if ($response->getCardUserKey() !== null) {
+                    $storeId = $this->_storeManager->getStore()->getId();
                     $iyziCardFind = $this->_iyziCardFactory->create()->getCollection()
                         ->addFieldToFilter('customer_id', $customerId)
-                        ->addFieldToFilter('api_key', $apiKey)
+                        ->addFieldToFilter('store_id', $storeId)
                         ->addFieldToSelect('card_user_key');
 
                     $iyziCardFind = $iyziCardFind->getData();
@@ -342,7 +343,7 @@ class IyzicoCheckoutForm extends Action implements CsrfAwareActionInterface
                         $iyziCardModel = $this->_iyziCardFactory->create();
                         $iyziCardModel->setData('customer_id', $customerId);
                         $iyziCardModel->setData('card_user_key', $response->getCardUserKey());
-                        $iyziCardModel->setData('api_key', $apiKey);
+                        $iyziCardModel->setData('store_id', $storeId);
                         $iyziCardModel->save();
                     }
                 }

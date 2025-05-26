@@ -101,7 +101,7 @@ class IyzicoCheckoutForm extends Action
         $price = $this->_iyzicoHelper->subTotalPriceCalc($checkoutSession);
         $paidPrice = $this->_iyzicoHelper->priceParser(round($checkoutSession->getGrandTotal(), 2));
         $callBackUrl = $callBack . "Iyzico_Iyzipay/response/iyzicocheckoutform";
-        $paymentSource = "MAGENTO2|" . $magentoVersion . "|SPACE-2.1.4";
+        $paymentSource = "MAGENTO2|" . $magentoVersion . "|SPACE-2.1.5";
 
         if (isset($postData['iyziQuoteEmail']) && isset($postData['iyziQuoteId'])) {
             $this->_customerSession->setEmail($postData['iyziQuoteEmail']);
@@ -121,7 +121,11 @@ class IyzicoCheckoutForm extends Action
         }
 
         if ($customerId) {
-            $iyziCardFind = $this->_iyziCardFactory->create()->getCollection()->addFieldToFilter('customer_id', $customerId)->addFieldToFilter('api_key', $apiKey)->addFieldToSelect('card_user_key');
+            $storeId = $this->_storeManager->getStore()->getId();
+            $iyziCardFind = $this->_iyziCardFactory->create()->getCollection()
+                ->addFieldToFilter('customer_id', $customerId)
+                ->addFieldToFilter('store_id', $storeId)
+                ->addFieldToSelect('card_user_key');
             $iyziCardFind = $iyziCardFind->getData();
             $customerCardUserKey = !empty($iyziCardFind[0]['card_user_key']) ? $iyziCardFind[0]['card_user_key'] : '';
         }

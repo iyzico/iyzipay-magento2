@@ -35,8 +35,38 @@ class UpgradeSchema implements UpgradeSchemaInterface
         SchemaSetupInterface $setup,
         ModuleContextInterface $context
     ) {
+        $setup->startSetup();
+        
         if (version_compare($context->getVersion(), "1.0.0", "<")) {
             //Your upgrade script
         }
+        
+        // Security fix: Replace api_key with store_id for multi-store support
+        if (version_compare($context->getVersion(), "2.1.5", "<")) {
+            $connection = $setup->getConnection();
+            $tableName = $setup->getTable('iyzico_card');
+            
+            // Add store_id column if it doesn't exist
+            if (!$connection->tableColumnExists($tableName, 'store_id')) {
+                $connection->addColumn(
+                    $tableName,
+                    'store_id',
+                    [
+                        'type' => \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+                        'unsigned' => true,
+                        'nullable' => false,
+                        'default' => 0,
+                        'comment' => 'Store ID for multi-store support'
+                    ]
+                );
+            }
+            
+            // Check if api_key column exists before trying to drop it
+            if ($connection->tableColumnExists($tableName, 'api_key')) {
+                $connection->dropColumn($tableName, 'api_key');
+            }
+        }
+        
+        $setup->endSetup();
     }
 }

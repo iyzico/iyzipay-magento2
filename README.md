@@ -39,6 +39,10 @@
 * iyzico Protected Script Support
 * Live / Sandbox Support
 
+# Security Updates
+---------------
+* **Version 2.1.5**: Fixed critical security vulnerability where API keys were stored in plaintext in the `iyzico_card` database table. API keys are now only stored encrypted in system configuration.
+
 # Notes
 ---------------
 * Developed and Tested on vanilla Magento2 2.2+ Installation
