@@ -97,6 +97,16 @@ class IyzipayRequest implements ActionInterface
             // Configure the basket
             $basketId = $this->checkoutSession->getQuoteId();
             $conversationId = $this->utilityHelper->generateConversationId($basketId);
+
+            /**
+             * Special control for 0.0₺ products
+             * If there is a 0.0₺ product, we need to update the product price to 1₺
+             */
+            $isZeroPriceProduct = $this->utilityHelper->hasZeroPriceProduct($checkoutSession);
+            if ($isZeroPriceProduct) {
+                $numberOfUpdatedProducts = $this->utilityHelper->updateProductPrice($checkoutSession);
+            }
+
             $basketItems = $this->objectHelper->createBasketItems($checkoutSession);
 
             // Configure the price

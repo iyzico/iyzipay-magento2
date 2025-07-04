@@ -442,4 +442,43 @@ class UtilityHelper
         $price += $order->getShippingAddress()->getShippingAmount() ?? 0;
         return $this->parsePrice($price);
     }
+
+    /**
+     * Has Zero Price Product
+     *
+     * @param $checkoutSession
+     * @return bool
+     */
+    public function hasZeroPriceProduct($checkoutSession): bool
+    {
+        $items = $checkoutSession->getAllVisibleItems();
+        foreach ($items as $item) {
+            if ($item->getPrice() == 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Update Quote
+     *
+     * @param $checkoutSession
+     * @return int $numberOfUpdatedProducts
+     */
+    public function updateProductPrice($checkoutSession): int
+    {
+        $numberOfUpdatedProducts = 0;
+        $items = $checkoutSession->getAllVisibleItems();
+        foreach ($items as $item) {
+            if ($item->getPrice() == 0) {
+                $item->setPrice(0.01);
+                $item->save();
+                $numberOfUpdatedProducts++;
+            }
+        }
+
+        return $numberOfUpdatedProducts;
+    }
 }
