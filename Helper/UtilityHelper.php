@@ -77,7 +77,7 @@ class UtilityHelper
     /**
      * Ensure Cookies Same Site
      *
-     * Sets SameSite=None; Secure on specified cookies.
+     * Sets SameSite=None; Secure on specified cookies and handles CSP whitelist.
      *
      * @return void
      */
@@ -92,10 +92,16 @@ class UtilityHelper
             'mage-cache-storage-section-invalidation',
             'mage-messages',
             'mage-translation-file-version',
-            'mage-translation-storage'
+            'mage-translation-storage',
+            'iyzico_payment_token',
+            'iyzico_session_id',
+            'iyzico_checkout_form'
         ];
 
         $cookieNamesToCheck = array_flip($cookieNamesToCheck);
+
+        // Set CSP headers for payment security
+        $this->setCSPHeaders();
 
         foreach ($_COOKIE as $cookieName => $value) {
             if (isset($cookieNamesToCheck[$cookieName])) {
@@ -103,7 +109,7 @@ class UtilityHelper
                     $cookieName,
                     $value,
                     time() + self::COOKIE_EXPIRE_TIME,
-                    $_SERVER['SERVER_NAME']
+                    $_SERVER['SERVER_NAME'] ?? 'localhost'
                 );
             }
         }
@@ -112,7 +118,7 @@ class UtilityHelper
     /**
      * Apply Cookie Settings
      *
-     * This function is responsible for applying the cookie settings.
+     * This function is responsible for applying the cookie settings with enhanced security.
      *
      * @param  string  $name
      * @param  string  $value
@@ -123,17 +129,66 @@ class UtilityHelper
      */
     private function applyCookieSettings(string $name, string $value, int $expire, string $domain): void
     {
+        // Enhanced security for payment-related cookies
+        $isPaymentCookie = in_array($name, [
+            'iyzico_payment_token',
+            'iyzico_session_id',
+            'iyzico_checkout_form',
+            'PHPSESSID'
+        ]);
+
         if (PHP_VERSION_ID < 70300) {
-            setcookie($name, $value, $expire, "/; samesite=None", $domain, true, true);
+            $path = $isPaymentCookie ? "/; samesite=Strict" : "/; samesite=None";
+            setcookie($name, $value, $expire, $path, $domain, true, true);
         } else {
-            setcookie($name, $value, [
+            $cookieOptions = [
                 'expires' => $expire,
                 'path' => "/",
                 'domain' => $domain,
-                'samesite' => 'None',
                 'secure' => true,
                 'httponly' => true
-            ]);
+            ];
+
+            // Use Strict SameSite for payment cookies, None for others
+            $cookieOptions['samesite'] = $isPaymentCookie ? 'Strict' : 'None';
+
+            setcookie($name, $value, $cookieOptions);
+        }
+
+        // Additional security headers for payment cookies
+        if ($isPaymentCookie && !headers_sent()) {
+            header("X-Content-Type-Options: nosniff");
+            header("X-Frame-Options: DENY");
+            header("X-XSS-Protection: 1; mode=block");
+        }
+    }
+
+    /**
+     * Set Content Security Policy Headers
+     *
+     * Sets appropriate CSP headers for payment security.
+     *
+     * @return void
+     */
+    private function setCSPHeaders(): void
+    {
+        if (!headers_sent()) {
+            $cspDirectives = [
+                "default-src 'self'",
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.iyzico.com https://*.iyzipay.com",
+                "style-src 'self' 'unsafe-inline' https://*.iyzico.com https://*.iyzipay.com",
+                "img-src 'self' data: https: http: https://*.iyzico.com https://*.iyzipay.com",
+                "connect-src 'self' https://*.iyzico.com https://*.iyzipay.com https://api.iyzipay.com",
+                "frame-src 'self' https://*.iyzico.com https://*.iyzipay.com",
+                "form-action 'self' https://*.iyzico.com https://*.iyzipay.com",
+                "frame-ancestors 'self'",
+                "base-uri 'self'",
+                "object-src 'none'",
+                "media-src 'self' https://*.iyzico.com https://*.iyzipay.com"
+            ];
+
+            $cspHeader = implode('; ', $cspDirectives);
+            header("Content-Security-Policy: " . $cspHeader);
         }
     }
 
@@ -421,8 +476,6 @@ class UtilityHelper
             $ordersByPaymentAndStatus['orderJobStatus'] = 'canceled';
         }
 
-
-
         return $ordersByPaymentAndStatus;
     }
 
@@ -441,5 +494,69 @@ class UtilityHelper
 
         $price += $order->getShippingAddress()->getShippingAmount() ?? 0;
         return $this->parsePrice($price);
+    }
+
+    /**
+     * Validate Payment Session
+     *
+     * Validates payment session and ensures proper cookie handling.
+     *
+     * @param string $sessionId
+     * @return bool
+     */
+    public function validatePaymentSession(string $sessionId): bool
+    {
+        if (empty($sessionId)) {
+            return false;
+        }
+
+        // Check if session cookie exists and is valid
+        if (!isset($_COOKIE['PHPSESSID']) || $_COOKIE['PHPSESSID'] !== $sessionId) {
+            return false;
+        }
+
+        // Ensure payment cookies are properly set
+        $this->ensureCookiesSameSite();
+
+        return true;
+    }
+
+    /**
+     * Set Payment Security Headers
+     *
+     * Sets additional security headers for payment pages.
+     *
+     * @return void
+     */
+    public function setPaymentSecurityHeaders(): void
+    {
+        if (!headers_sent()) {
+            header("Strict-Transport-Security: max-age=31536000; includeSubDomains");
+            header("Referrer-Policy: strict-origin-when-cross-origin");
+            header("Permissions-Policy: payment=(self)");
+        }
+    }
+
+    /**
+     * Clean Payment Cookies
+     *
+     * Cleans up payment-related cookies after transaction completion.
+     *
+     * @return void
+     */
+    public function cleanPaymentCookies(): void
+    {
+        $paymentCookies = [
+            'iyzico_payment_token',
+            'iyzico_session_id',
+            'iyzico_checkout_form'
+        ];
+
+        foreach ($paymentCookies as $cookieName) {
+            if (isset($_COOKIE[$cookieName])) {
+                setcookie($cookieName, '', time() - 3600, '/');
+                unset($_COOKIE[$cookieName]);
+            }
+        }
     }
 }
