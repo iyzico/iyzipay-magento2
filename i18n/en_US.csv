@@ -99,3 +99,5 @@
 "Shipping & Handling", "Shipping & Handling"
 "Grand Total", "Grand Total"
 "AUTO_CANCEL", "Order automatically canceled by iyzico payment gateway"
+
+"IYZIPAY_PAY_BUTTON_TITLE", "Pay"

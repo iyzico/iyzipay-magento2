@@ -95,3 +95,5 @@
 "Shipping & Handling", "Kargo ve İşlem"
 "Grand Total", "Genel Toplam"
 "AUTO_CANCEL", "Sipariş iyzico ödeme sistemi tarafından otomatik olarak iptal edildi"
+
+"IYZIPAY_PAY_BUTTON_TITLE", "Ödeme Yap"
