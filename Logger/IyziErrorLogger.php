@@ -22,8 +22,8 @@
 
 namespace Iyzico\Iyzipay\Logger;
 
-use Monolog\Logger;
 use Iyzico\Iyzipay\Logger\Handler\IyziErrorHandler;
+use Monolog\Logger;
 
 class IyziErrorLogger extends Logger
 {

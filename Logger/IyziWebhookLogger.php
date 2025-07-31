@@ -22,8 +22,8 @@
 
 namespace Iyzico\Iyzipay\Logger;
 
-use Monolog\Logger;
 use Iyzico\Iyzipay\Logger\Handler\IyziWebhookHandler;
+use Monolog\Logger;
 
 
 class IyziWebhookLogger extends Logger

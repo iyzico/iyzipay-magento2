@@ -22,15 +22,18 @@
 
 namespace Iyzico\Iyzipay\Model\Order\Creditmemo\Total;
 
-class Subtotal extends \Magento\Sales\Model\Order\Total\AbstractTotal
+use Magento\Sales\Model\Order\Creditmemo;
+use Magento\Sales\Model\Order\Total\AbstractTotal;
+
+class Subtotal extends AbstractTotal
 {
     /**
      * Collect Creditmemo subtotal
      *
-     * @param  \Magento\Sales\Model\Order\Creditmemo  $creditmemo
+     * @param  Creditmemo  $creditmemo
      * @return $this
      */
-    public function collect(\Magento\Sales\Model\Order\Creditmemo $creditmemo)
+    public function collect(Creditmemo $creditmemo)
     {
         $subtotal = 0;
         $baseSubtotal = 0;

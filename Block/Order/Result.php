@@ -22,10 +22,10 @@
 
 namespace Iyzico\Iyzipay\Block\Order;
 
-use Magento\Framework\View\Element\Template;
 use Magento\Framework\App\RequestInterface;
-use Magento\Framework\View\Asset\Repository;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
+use Magento\Framework\View\Asset\Repository;
+use Magento\Framework\View\Element\Template;
 
 class Result extends Template
 {

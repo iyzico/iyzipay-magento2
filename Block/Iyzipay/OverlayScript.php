@@ -22,11 +22,11 @@
 
 namespace Iyzico\Iyzipay\Block\Iyzipay;
 
-use Magento\Store\Model\ScopeInterface;
-use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\StoreManagerInterface;
 
 class OverlayScript extends Template
 {

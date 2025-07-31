@@ -69,7 +69,7 @@ class IyzipayWebhookField extends Field
         $baseUrl = $this->configHelper->getWebsiteBaseUrl($websiteId);
 
         if ($webhookUrlKey) {
-            return $baseUrl . 'rest/V1/iyzico/webhook/' . $webhookUrlKey;
+            return $baseUrl.'rest/V1/iyzico/webhook/'.$webhookUrlKey;
         } else {
             return 'Clear cookies and then push the "Save Config" button';
         }
