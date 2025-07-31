@@ -102,6 +102,8 @@ class IyzipayResponse implements HttpPostActionInterface, CsrfAwareActionInterfa
     public function execute()
     {
         try {
+            $error = [];
+
             $token = $this->request->getParam('token');
 
             $orderId = $this->orderJobService->findParametersByToken($token, 'order_id');
@@ -153,17 +155,34 @@ class IyzipayResponse implements HttpPostActionInterface, CsrfAwareActionInterfa
 
                 $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
                 return $resultRedirect->setPath('checkout/onepage/success', ['_secure' => true]);
-            } else {
-                $this->orderService->releaseStock($order);
-                $this->messageManager->addErrorMessage(__('An error occurred while processing your payment. Please try again.'));
-                $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
-                return $resultRedirect->setPath('checkout/cart', ['_secure' => true]);
             }
+
+            if ($status === 'failure' && $paymentStatus === 'FAILURE') {
+                $error['code'] = $response->getErrorCode();
+                $error['message'] = $response->getErrorMessage();
+                $error['error_group'] = $response->getErrorGroup();
+            }
+
+            $this->orderService->releaseStock($order);
+            $this->restoreQuote($quote);
+
+            if (!empty($error)) {
+                $this->messageManager->addErrorMessage($error['code']." - ".$error['message']);
+            } else {
+                $this->messageManager->addErrorMessage(__('An error occurred while processing your payment. Please try again.'));
+            }
+
+            $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
+            return $resultRedirect->setPath('checkout/cart', ['_secure' => true]);
         } catch (Exception $e) {
             $this->errorLogger->critical(
                 "execute error: ".$e->getMessage(),
                 ['fileName' => __FILE__, 'lineNumber' => __LINE__]
             );
+
+            // Try to restore quote in case of exception
+            $this->restoreQuote($quote);
+
             $this->messageManager->addErrorMessage(__('An error occurred while processing your payment. Please try again.'));
             $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
             return $resultRedirect->setPath('checkout/cart', ['_secure' => true]);
@@ -188,6 +207,28 @@ class IyzipayResponse implements HttpPostActionInterface, CsrfAwareActionInterfa
                 ['fileName' => __FILE__, 'lineNumber' => __LINE__]
             );
             return null;
+        }
+    }
+
+    /**
+     * Restore Quote
+     *
+     * This function is responsible for restoring the quote by setting it active,
+     * saving it and replacing it in the checkout session.
+     *
+     * @param  Quote|null  $quote
+     * @return void
+     */
+    private function restoreQuote(?Quote $quote): void
+    {
+        if ($quote !== null) {
+            try {
+                $quote->setIsActive(1);
+                $this->quoteRepository->save($quote);
+                $this->checkoutSession->replaceQuote($quote);
+            } catch (Exception $quoteException) {
+                $this->errorLogger->critical("Quote restore error: ".$quoteException->getMessage());
+            }
         }
     }
 }
