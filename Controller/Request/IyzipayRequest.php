@@ -22,6 +22,7 @@
 
 namespace Iyzico\Iyzipay\Controller\Request;
 
+use Exception;
 use Iyzico\Iyzipay\Helper\ConfigHelper;
 use Iyzico\Iyzipay\Helper\ObjectHelper;
 use Iyzico\Iyzipay\Helper\UtilityHelper;
@@ -46,8 +47,7 @@ use Magento\Quote\Model\Quote;
 
 class IyzipayRequest implements ActionInterface
 {
-    public function __construct
-    (
+    public function __construct(
         protected CheckoutSession $checkoutSession,
         protected CustomerSession $customerSession,
         protected IyziCardFactory $iyziCardFactory,
@@ -107,6 +107,9 @@ class IyzipayRequest implements ActionInterface
             $shippingAddress = $this->objectHelper->createShippingAddress($checkoutSession);
             $billingAddress = $this->objectHelper->createBillingAddress($checkoutSession);
 
+            // Configure the installment
+            $installments = $this->objectHelper->getInstallment($checkoutSession);
+
             // Create the request
             $request = new CreateCheckoutFormInitializeRequest();
             $request->setLocale($locale);
@@ -124,6 +127,7 @@ class IyzipayRequest implements ActionInterface
             $request->setBasketItems($basketItems);
             $request->setCardUserKey($cardUserKey);
             $request->setGoBackUrl($this->oneTimeUrlService->createOneTimeUrl($basketId));
+            $request->setEnabledInstallments($installments);
 
             // Create the options
             $options = new Options();
@@ -164,7 +168,7 @@ class IyzipayRequest implements ActionInterface
                 'message' => "Signature Mismatch",
                 'code' => "0"
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->resultJsonFactory->create()->setData([
                 'success' => false,
                 'message' => $e->getMessage(),

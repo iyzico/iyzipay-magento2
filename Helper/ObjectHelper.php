@@ -26,14 +26,18 @@ use Iyzico\Iyzipay\Library\Model\Address;
 use Iyzico\Iyzipay\Library\Model\BasketItem;
 use Iyzico\Iyzipay\Library\Model\BasketItemType;
 use Iyzico\Iyzipay\Library\Model\Buyer;
+use Iyzico\Iyzipay\Model\ResourceModel\IyziInstallment\CollectionFactory;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Math\Random;
 
-class ObjectHelper
+readonly class ObjectHelper
 {
     public function __construct(
         private UtilityHelper $utilityHelper,
-        private Random $rand
-    ) {}
+        private Random $rand,
+        private CollectionFactory $installmentCollectionFactory,
+    ) {
+    }
 
     public function createBasketItems($checkoutSession): array
     {
@@ -71,6 +75,9 @@ class ObjectHelper
         return $basketItems;
     }
 
+    /**
+     * @throws LocalizedException
+     */
     public function createBuyer($checkoutSession): Buyer
     {
         $uuid = $this->rand->getUniqueHash();
@@ -142,5 +149,108 @@ class ObjectHelper
         $billingAddress->setCountry($this->utilityHelper->validateString($country));
 
         return $billingAddress;
+    }
+
+    public function getInstallment($checkoutSession): array
+    {
+        $allPossibleInstallments = range(1, 12);
+        $productInstallments = [];
+
+        foreach ($checkoutSession->getAllVisibleItems() as $item) {
+            $product = $item->getProduct();
+            $sku = $product->getSku();
+
+            $skuInstallmentRules = $this->getInstallmentRuleByProductSku($sku);
+
+            if (!empty($skuInstallmentRules)) {
+                $productInstallments[] = $skuInstallmentRules;
+            } else {
+                // Fallback to category-based installments if no SKU rule exists
+                $productCategories = $product->getCategoryIds();
+                $categoryInstallmentRules = [];
+
+                foreach ($productCategories as $categoryId) {
+                    $categoryRules = $this->getInstallmentRuleByCategoryId($categoryId);
+                    if (!empty($categoryRules)) {
+                        $categoryInstallmentRules = array_merge($categoryInstallmentRules, $categoryRules);
+                    }
+                }
+
+                if (!empty($categoryInstallmentRules)) {
+                    $categoryInstallmentRules = array_unique($categoryInstallmentRules);
+                    sort($categoryInstallmentRules);
+                    $productInstallments[] = $categoryInstallmentRules;
+                }
+            }
+        }
+
+        if (empty($productInstallments)) {
+            return [];
+        }
+
+        $installmentOptions = $allPossibleInstallments;
+
+        foreach ($productInstallments as $options) {
+            if (empty($options)) {
+                return [];
+            }
+
+            foreach ($allPossibleInstallments as $installment) {
+                if (!in_array($installment, $options) && in_array($installment, $installmentOptions)) {
+                    $key = array_search($installment, $installmentOptions);
+                    unset($installmentOptions[$key]);
+                }
+            }
+        }
+
+        $installmentOptions = array_values(array_filter($installmentOptions));
+
+        if (empty($installmentOptions)) {
+            return [];
+        }
+
+        sort($installmentOptions);
+
+        return $installmentOptions;
+    }
+
+    public function getInstallmentRuleByProductSku($sku): array
+    {
+        $collection = $this->installmentCollectionFactory->create();
+        $collection->addFieldToFilter('product_sku', ['eq' => $sku]);
+
+        $installmentRule = $collection->getFirstItem();
+
+        if (!$installmentRule->getId()) {
+            return [];
+        }
+
+        $installmentString = $installmentRule->getSettings();
+        $installmentArray = json_decode($installmentString, true);
+        if (is_array($installmentArray)) {
+            return $installmentArray;
+        }
+
+        return [];
+    }
+
+    public function getInstallmentRuleByCategoryId($categoryId): array
+    {
+        $collection = $this->installmentCollectionFactory->create();
+        $collection->addFieldToFilter('category_id', ['eq' => $categoryId]);
+
+        $installmentRule = $collection->getFirstItem();
+
+        if (!$installmentRule->getId()) {
+            return [];
+        }
+
+        $installmentString = $installmentRule->getSettings();
+        $installmentArray = json_decode($installmentString, true);
+        if (is_array($installmentArray)) {
+            return $installmentArray;
+        }
+
+        return [];
     }
 }
