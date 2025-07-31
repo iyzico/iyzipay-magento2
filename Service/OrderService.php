@@ -112,6 +112,7 @@ class OrderService
         $ordersByPaymentAndStatus = [];
         $paymentStatus = '';
         $status = '';
+        $error = [];
 
         $order = $this->findOrderById($orderId);
         $payment = $order->getPayment();
@@ -122,6 +123,12 @@ class OrderService
         } else {
             $paymentStatus = $response->getIyziEventType();
             $status = $response->getStatus();
+        }
+
+        if ($response->getErrorCode() != null || $response->getErrorMessage() != null) {
+            $error['code'] = $response->getErrorCode();
+            $error['message'] = $response->getErrorMessage();
+            $error['error_group'] = $response->getErrorGroup();
         }
 
         $ordersByPaymentAndStatus = $this->utilityHelper->findOrderByPaymentAndStatus($paymentStatus, $status);
@@ -149,8 +156,15 @@ class OrderService
         }
 
         if ($webhook === 'no') {
-            $order->addCommentToStatusHistory("Payment ID: ".$response->getPaymentId()." - Conversation ID:".$response->getConversationId());
+            $paymentId = $response->getPaymentId() ?? "N/A";
+            $conversationId = $response->getConversationId() ?? "N/A";
+            $order->addCommentToStatusHistory("Payment ID: ".$paymentId." - Conversation ID:".$conversationId);
             $this->updatePaymentAdditionalInformation($payment, $response);
+        }
+
+        if (!empty($error)) {
+            $order->setCanSendNewEmailFlag(false);
+            $order->addCommentToStatusHistory("Error Code: ".$error['code']." - Error Message: ".$error['message']." - Error Group: ".$error['error_group']);
         }
 
         $this->orderRepository->save($order);
@@ -345,8 +359,6 @@ class OrderService
 
         $response = CheckoutForm::retrieve($request, $options);
 
-        $this->utilityHelper->validateSignature($response, $secretKey);
-        
         return $response;
     }
 }
