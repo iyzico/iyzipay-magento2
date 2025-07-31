@@ -1,0 +1,17 @@
+<div data-bind="afterRender: getInstallmentSettings">
+    <div class="admin__field">
+        <label class="admin__field-label">
+            <span data-bind="i18n: 'Taksit Seçenekleri'"></span>
+        </label>
+        <div class="admin__field-control">
+            <div class="installment-settings-container">
+                <p data-bind="i18n: 'Kategori için geçerli olacak taksit seçeneklerini seçin:'"></p>
+                <select multiple="multiple" name="installment_options" class="admin__control-multiselect" data-bind="options: availableInstallments,
+                       selectedOptions: selectedInstallments,
+                       optionsText: function(item) { return item + ' Taksit'; },
+                       optionsValue: function(item) { return item; }">
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
