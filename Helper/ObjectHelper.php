@@ -42,36 +42,40 @@ readonly class ObjectHelper
     public function createBasketItems($checkoutSession): array
     {
         $basketItems = [];
-
+ 
         /* Basket Items */
         foreach ($checkoutSession->getAllVisibleItems() as $key => $item) {
             $basketItem = new BasketItem();
-
+ 
             $basketItem->setId($item->getProductId());
-            $basketItem->setPrice($this->utilityHelper->parsePrice(round($item->getPrice(), 2)));
+            if ($item->getPrice() == 0) {
+                $basketItem->setPrice(0.01);
+            } else {
+                $basketItem->setPrice($this->utilityHelper->parsePrice(round($item->getPrice(), 2)));
+            }
             $basketItem->setName($this->utilityHelper->validateString($item->getName()));
             $basketItem->setCategory1($this->utilityHelper->validateString($item->getName()));
             $basketItem->setItemType(BasketItemType::PHYSICAL);
-
+ 
             $basketItems[] = $basketItem;
         }
-
+ 
         $shippingAddress = $checkoutSession->getShippingAddress();
         if ($shippingAddress) {
             $shipping = $shippingAddress->getShippingAmount();
             if ($shipping && $shipping != '0' && $shipping != '0.0' && $shipping != '0.00') {
                 $shippingBasketItem = new BasketItem();
-
+ 
                 $shippingBasketItem->setId("CargoId");
                 $shippingBasketItem->setPrice($this->utilityHelper->parsePrice($shipping));
                 $shippingBasketItem->setName("Cargo");
                 $shippingBasketItem->setCategory1("Cargo");
                 $shippingBasketItem->setItemType(BasketItemType::PHYSICAL);
-
+ 
                 $basketItems[] = $shippingBasketItem;
             }
         }
-
+ 
         return $basketItems;
     }
 
