@@ -3,6 +3,7 @@
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
     <event name="sales_order_save_before">
         <observer name="installment_fee_assign" instance="Iyzico\Iyzipay\Observer\DataAssignObserver"/>
+        <observer name="submit_observer" instance="Iyzico\Iyzipay\Observer\SubmitObserver"/>
     </event>
     <event name="sales_order_invoice_save_before">
         <observer name="installment_fee_invoice_assign" instance="Iyzico\Iyzipay\Observer\SalesOrderInvoiceSaveBefore"/>
