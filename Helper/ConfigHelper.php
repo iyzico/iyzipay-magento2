@@ -148,6 +148,16 @@ class ConfigHelper
     }
 
     /**
+     * Get Store Url
+     *
+     * This function is responsible for getting the store url.
+     */
+    public function getStoreUrl(): string
+    {
+        return $this->storeManager->getStore()->getBaseUrl();
+    }
+
+    /**
      * Get Base URL
      *
      * @return string
@@ -196,7 +206,7 @@ class ConfigHelper
      */
     public function getPaymentSource(): string
     {
-        return "MAGENTO2|".$this->getMagentoVersion()."|SPACE-2.1.8";
+        return "MAGENTO2|".$this->getMagentoVersion()."|SPACE-2.1.9";
     }
 
     /**

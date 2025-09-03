@@ -110,6 +110,9 @@ class IyzipayRequest implements ActionInterface
             // Configure the installment
             $installments = $this->objectHelper->getInstallment($checkoutSession);
 
+            // Configure the go back url
+            $goBackUrl = $this->configHelper->getStoreUrl() . "checkout";
+
             // Create the request
             $request = new CreateCheckoutFormInitializeRequest();
             $request->setLocale($locale);
@@ -126,7 +129,7 @@ class IyzipayRequest implements ActionInterface
             $request->setBillingAddress($billingAddress);
             $request->setBasketItems($basketItems);
             $request->setCardUserKey($cardUserKey);
-            $request->setGoBackUrl($this->oneTimeUrlService->createOneTimeUrl($basketId));
+            $request->setGoBackUrl($goBackUrl);
             $request->setEnabledInstallments($installments);
 
             // Create the options
