@@ -25,7 +25,7 @@
             <!-- ko template: getTemplate() --><!-- /ko -->
             <!--/ko-->
         </div>
-        <div data-payment-element-iyzico="1" id="iyzipay-payment">
+        <div data-payment-element-iyzico="1" id="iyzipay-payment" data-bind="afterRender: initializePaymentForm()">
             <div class="iyziCards" id="iyziCards">
                 <?xml version="1.0" encoding="UTF-8"?>
                 <svg height="32px" version="1.1" viewBox="0 0 429 32" width="429px" xmlns="http://www.w3.org/2000/svg"

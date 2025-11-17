@@ -160,10 +160,32 @@ class IyzipayRequest implements ActionInterface
 
                 $orderId = $this->orderService->placeOrder($basketId, $this->customerSession, $this->cartManagement);
                 $this->orderJobService->saveIyziOrderJobTable($response, $basketId, $orderId);
-                return $resultJson->setData([
+
+                // Check display type
+                $displayType = $this->configHelper->getDisplayType();
+                $responseData = [
                     'success' => true,
-                    'url' => $response->getPaymentPageUrl()
-                ]);
+                    'url' => $response->getPaymentPageUrl(),
+                    'displayType' => $displayType ?: 'redirect',
+                    'debug_displayType' => $displayType // Debug için
+                ];
+
+                // If iframe mode, include checkout form content
+                if ($displayType === 'iframe' || $displayType === '1' || $displayType === 1) {
+                    $checkoutFormContent = $response->getCheckoutFormContent();
+                    $responseData['debug_checkoutFormContent_exists'] = !empty($checkoutFormContent); // Debug için
+                    if ($checkoutFormContent) {
+                        $responseData['checkoutFormContent'] = $checkoutFormContent;
+                        $responseData['token'] = $response->getToken();
+                        $responseData['displayType'] = 'iframe';
+                    } else {
+                        // If checkoutFormContent is empty, fallback to redirect
+                        $responseData['displayType'] = 'redirect';
+                        $responseData['debug_message'] = 'checkoutFormContent is empty';
+                    }
+                }
+
+                return $resultJson->setData($responseData);
             }
 
             return $resultJson->setData([

@@ -29,6 +29,9 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\Store\Api\Data\WebsiteInterface;
+use Magento\Store\Api\Data\StoreInterface;
+use Magento\Store\Model\Store;
 
 class ConfigHelper
 {
@@ -132,7 +135,11 @@ class ConfigHelper
      */
     public function getCurrency(): string
     {
-        return $this->storeManager->getStore()->getCurrentCurrency()->getCode();
+        $store = $this->storeManager->getStore();
+        if ($store instanceof Store) {
+            return $store->getCurrentCurrency()->getCode();
+        }
+        return '';
     }
 
     /**
@@ -144,7 +151,11 @@ class ConfigHelper
      */
     public function getCallbackUrl(): string
     {
-        return $this->storeManager->getStore()->getBaseUrl()."iyzico/response/iyzipayresponse";
+        $store = $this->storeManager->getStore();
+        if ($store instanceof Store) {
+            return $store->getBaseUrl()."iyzico/response/iyzipayresponse";
+        }
+        return '';
     }
 
     /**
@@ -154,7 +165,11 @@ class ConfigHelper
      */
     public function getStoreUrl(): string
     {
-        return $this->storeManager->getStore()->getBaseUrl();
+        $store = $this->storeManager->getStore();
+        if ($store instanceof Store) {
+            return $store->getBaseUrl();
+        }
+        return '';
     }
 
     /**
@@ -181,7 +196,11 @@ class ConfigHelper
      */
     public function getGoBackUrl(string $token): string
     {
-        return $this->storeManager->getStore()->getBaseUrl()."iyzico/redirect/backtostore?token=".$token;
+        $store = $this->storeManager->getStore();
+        if ($store instanceof Store) {
+            return $store->getBaseUrl()."iyzico/redirect/backtostore?token=".$token;
+        }
+        return '';
     }
 
     /**
@@ -206,7 +225,7 @@ class ConfigHelper
      */
     public function getPaymentSource(): string
     {
-        return "MAGENTO2|".$this->getMagentoVersion()."|SPACE-2.1.9";
+        return "MAGENTO2|".$this->getMagentoVersion()."|SPACE-2.1.10";
     }
 
     /**
@@ -239,19 +258,45 @@ class ConfigHelper
     }
 
     /**
+     * Get Display Type
+     *
+     * This function is responsible for getting the display type (redirect or iframe).
+     *
+     * @return mixed
+     * @throws LocalizedException
+     */
+    public function getDisplayType(): mixed
+    {
+        return $this->scopeConfig->getValue(
+            'payment/iyzipay/display',
+            $this->getScopeInterface(),
+            $this->getWebsiteId()
+        );
+    }
+
+    /**
      * Get Base URL for the given Website ID
      *
      * @param  int|null  $websiteId
      * @return string
      * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
     public function getWebsiteBaseUrl(?int $websiteId): string
     {
         if ($websiteId) {
-            $website = $this->storeManager->getWebsite($websiteId);
-            return $website->getDefaultStore()->getBaseUrl();
+            $stores = $this->storeManager->getStores();
+            foreach ($stores as $store) {
+                if ($store instanceof Store && $store->getWebsiteId() == $websiteId) {
+                    return $store->getBaseUrl();
         }
-        return $this->storeManager->getDefaultStoreView()->getBaseUrl();
+            }
+        }
+        $defaultStore = $this->storeManager->getDefaultStoreView();
+        if ($defaultStore instanceof Store) {
+            return $defaultStore->getBaseUrl();
+        }
+        return '';
     }
 
     /**
@@ -277,10 +322,12 @@ class ConfigHelper
      */
     public function getCustomCronSettings(): mixed
     {
+        $store = $this->storeManager->getStore();
+        $storeId = ($store instanceof Store) ? $store->getId() : 0;
         return $this->scopeConfig->getValue(
             'payment/iyzipay/custom_cron_settings',
             ScopeInterface::SCOPE_STORES,
-            $this->storeManager->getStore()->getId()
+            $storeId
         );
     }
 
@@ -293,11 +340,14 @@ class ConfigHelper
      */
     public function setCronSettings(string $value): void
     {
+        $store = $this->storeManager->getStore();
+        $storeId = ($store instanceof Store) ? $store->getId() : 0;
         $this->configWriter->save(
             'crontab/default/jobs/iyzico_process_pending_orders/schedule/cron_expr',
             $value,
             ScopeInterface::SCOPE_STORES,
-            $this->storeManager->getStore()->getId()
+            $storeId
         );
     }
 }
+

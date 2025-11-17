@@ -97,3 +97,6 @@
 "AUTO_CANCEL", "Sipariş iyzico ödeme sistemi tarafından otomatik olarak iptal edildi"
 
 "IYZIPAY_PAY_BUTTON_TITLE", "Ödeme Yap"
+"Display", "Görüntüleme"
+"Redirect", "Yönlendirme"
+"iFrame", "iFrame"

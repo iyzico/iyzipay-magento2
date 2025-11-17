@@ -101,3 +101,6 @@
 "AUTO_CANCEL", "Order automatically canceled by iyzico payment gateway"
 
 "IYZIPAY_PAY_BUTTON_TITLE", "Pay"
+"Display", "Display"
+"Redirect", "Redirect"
+"iFrame", "iFrame"

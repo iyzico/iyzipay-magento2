@@ -489,7 +489,12 @@ class UtilityHelper
     {
         $price = 0;
         foreach ($order->getAllVisibleItems() as $item) {
-            $price += round($item->getPrice(), 2);
+            $itemPrice = $item->getPrice();
+            if ($itemPrice == 0) {
+                $itemPrice = 0.01;
+            }
+
+            $price += round($itemPrice, 2);
         }
 
         $price += $order->getShippingAddress()->getShippingAmount() ?? 0;

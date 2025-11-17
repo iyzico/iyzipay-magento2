@@ -1,5 +1,9 @@
 <?xml version="1.0" ?>
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+	<head>
+		<!-- Allow iyzico scripts for CSP -->
+		<meta name="referrer" content="no-referrer-when-downgrade"/>
+	</head>
 	<body>
 		<referenceBlock name="checkout.root">
 			<arguments>

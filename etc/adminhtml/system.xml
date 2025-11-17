@@ -55,6 +55,11 @@
                     <label>Overlay Script</label>
                     <source_model>Iyzico\Iyzipay\Model\Config\Source\OverlayScript</source_model>
                 </field>
+                <field id="display" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="56"
+                       translate="label" type="select">
+                    <label>Display</label>
+                    <source_model>Iyzico\Iyzipay\Model\Config\Source\DisplayType</source_model>
+                </field>
                 <field id="sort_order" showInDefault="1" showInWebsite="1" showInStore="0" sortOrder="60"
                        translate="label" type="text">
                     <label>Sort Order</label>
