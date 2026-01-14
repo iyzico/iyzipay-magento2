@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <resource id="Magento_Backend::admin">
+                <resource id="Iyzico_Iyzipay::iyzico_installment" title="iyzico Installment Settings" translate="title" sortOrder="10">
+                    <resource id="Iyzico_Iyzipay::category_installment_settings" title="Category Installment Settings" translate="title" sortOrder="20"/>
+                    <resource id="Iyzico_Iyzipay::product_installment_settings" title="Product SKU Installment Settings" translate="title" sortOrder="30"/>
+                </resource>
+            </resource>
+        </resources>
+    </acl>
+</config>

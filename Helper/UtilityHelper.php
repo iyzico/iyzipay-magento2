@@ -1,0 +1,567 @@
+<?php
+
+/**
+ * iyzico Payment Gateway For Magento 2
+ * Copyright (C) 2018 iyzico
+ *
+ * This file is part of Iyzico/Iyzipay.
+ *
+ * Iyzico/Iyzipay is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+namespace Iyzico\Iyzipay\Helper;
+
+use Iyzico\Iyzipay\Library\Model\CheckoutForm;
+use Iyzico\Iyzipay\Model\IyziCardFactory;
+use Magento\Customer\Model\Session as CustomerSession;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Quote\Model\Quote;
+
+class UtilityHelper
+{
+    private const COOKIE_EXPIRE_TIME = 86400;
+
+    /**
+     * Calculate Installment Price
+     *
+     * @param  float  $paidPrice
+     * @param  float  $grandTotal
+     * @return string
+     */
+    public function calculateInstallmentPrice(float $paidPrice, float $grandTotal): string
+    {
+        return $this->parsePrice($paidPrice - $grandTotal);
+    }
+
+    /**
+     * Trailing Zero
+     *
+     * @param  float  $price
+     * @return string
+     */
+    public function parsePrice(float $price): string
+    {
+        if (strpos($price, ".") === false) {
+            return $price.".0";
+        }
+
+        $subStrIndex = 0;
+        $priceReversed = strrev($price);
+        for ($i = 0; $i < strlen($priceReversed); $i++) {
+            if (strcmp($priceReversed[$i], "0") == 0) {
+                $subStrIndex = $i + 1;
+            } else {
+                if (strcmp($priceReversed[$i], ".") == 0) {
+                    $priceReversed = "0".$priceReversed;
+                    break;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        return strrev(substr($priceReversed, $subStrIndex));
+    }
+
+    /**
+     * Ensure Cookies Same Site
+     *
+     * Sets SameSite=None; Secure on specified cookies and handles CSP whitelist.
+     *
+     * @return void
+     */
+    public function ensureCookiesSameSite(): void
+    {
+        $cookieNamesToCheck = [
+            'PHPSESSID',
+            'adminhtml',
+            'frontend',
+            'mage-cache-sessid',
+            'mage-cache-storage',
+            'mage-cache-storage-section-invalidation',
+            'mage-messages',
+            'mage-translation-file-version',
+            'mage-translation-storage',
+            'iyzico_payment_token',
+            'iyzico_session_id',
+            'iyzico_checkout_form'
+        ];
+
+        $cookieNamesToCheck = array_flip($cookieNamesToCheck);
+
+        // Set CSP headers for payment security
+        $this->setCSPHeaders();
+
+        foreach ($_COOKIE as $cookieName => $value) {
+            if (isset($cookieNamesToCheck[$cookieName])) {
+                $this->applyCookieSettings(
+                    $cookieName,
+                    $value,
+                    time() + self::COOKIE_EXPIRE_TIME,
+                    $_SERVER['SERVER_NAME'] ?? 'localhost'
+                );
+            }
+        }
+    }
+
+    /**
+     * Apply Cookie Settings
+     *
+     * This function is responsible for applying the cookie settings with enhanced security.
+     *
+     * @param  string  $name
+     * @param  string  $value
+     * @param  int  $expire
+     * @param  string  $domain
+     *
+     * @return void
+     */
+    private function applyCookieSettings(string $name, string $value, int $expire, string $domain): void
+    {
+        // Enhanced security for payment-related cookies
+        $isPaymentCookie = in_array($name, [
+            'iyzico_payment_token',
+            'iyzico_session_id',
+            'iyzico_checkout_form',
+            'PHPSESSID'
+        ]);
+
+        if (PHP_VERSION_ID < 70300) {
+            $path = $isPaymentCookie ? "/; samesite=Strict" : "/; samesite=None";
+            setcookie($name, $value, $expire, $path, $domain, true, true);
+        } else {
+            $cookieOptions = [
+                'expires' => $expire,
+                'path' => "/",
+                'domain' => $domain,
+                'secure' => true,
+                'httponly' => true
+            ];
+
+            // Use Strict SameSite for payment cookies, None for others
+            $cookieOptions['samesite'] = $isPaymentCookie ? 'Strict' : 'None';
+
+            setcookie($name, $value, $cookieOptions);
+        }
+
+        // Additional security headers for payment cookies
+        if ($isPaymentCookie && !headers_sent()) {
+            header("X-Content-Type-Options: nosniff");
+            header("X-Frame-Options: DENY");
+            header("X-XSS-Protection: 1; mode=block");
+        }
+    }
+
+    /**
+     * Set Content Security Policy Headers
+     *
+     * Sets appropriate CSP headers for payment security.
+     *
+     * @return void
+     */
+    private function setCSPHeaders(): void
+    {
+        if (!headers_sent()) {
+            $cspDirectives = [
+                "default-src 'self'",
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.iyzico.com https://*.iyzipay.com",
+                "style-src 'self' 'unsafe-inline' https://*.iyzico.com https://*.iyzipay.com",
+                "img-src 'self' data: https: http: https://*.iyzico.com https://*.iyzipay.com",
+                "connect-src 'self' https://*.iyzico.com https://*.iyzipay.com https://api.iyzipay.com",
+                "frame-src 'self' https://*.iyzico.com https://*.iyzipay.com",
+                "form-action 'self' https://*.iyzico.com https://*.iyzipay.com",
+                "frame-ancestors 'self'",
+                "base-uri 'self'",
+                "object-src 'none'",
+                "media-src 'self' https://*.iyzico.com https://*.iyzipay.com"
+            ];
+
+            $cspHeader = implode('; ', $cspDirectives);
+            header("Content-Security-Policy: " . $cspHeader);
+        }
+    }
+
+    /**
+     * Validate String
+     *
+     * This function is responsible for validating the string.
+     *
+     * @param  mixed  $string
+     * @return string
+     */
+    public function validateString(mixed $string): string
+    {
+        if (is_array($string)) {
+            return implode(' ', $string);
+        }
+
+        if (!empty(trim($string))) {
+            return $string;
+        }
+
+        return "NOT PROVIDED";
+    }
+
+    /**
+     * Generate Conversation Id
+     *
+     * This function is responsible for generating the conversation ID.
+     *
+     * @param  int  $quoteId
+     * @return string
+     */
+    public function generateConversationId(int $quoteId): string
+    {
+        return 'QI'.$quoteId.'T'.time();
+    }
+
+    /**
+     * Get Customer Id
+     *
+     * This function is responsible for getting the customer ID.
+     *
+     * @param  CustomerSession  $customerSession
+     * @return int|null
+     */
+    public function getCustomerId(CustomerSession $customerSession): ?int
+    {
+        return $customerSession->isLoggedIn() ? $customerSession->getCustomerId() : 0;
+    }
+
+    /**
+     * Get Customer Card User Key
+     *
+     * This function is responsible for getting the customer card user key.
+     *
+     * @param  IyziCardFactory  $iyziCardFactory
+     * @param  int  $customerId
+     * @param  string  $apiKey
+     * @return string
+     */
+    public function getCustomerCardUserKey(IyziCardFactory $iyziCardFactory, int $customerId, string $apiKey): string
+    {
+        if ($customerId) {
+            $iyziCardFind = $iyziCardFactory->create()->getCollection()
+                ->addFieldToFilter('customer_id', $customerId)
+                ->addFieldToFilter('api_key', $apiKey)
+                ->addFieldToSelect('card_user_key');
+            $iyziCardFind = $iyziCardFind->getData();
+            return !empty($iyziCardFind[0]['card_user_key']) ? $iyziCardFind[0]['card_user_key'] : '';
+        }
+        return '';
+    }
+
+    /**
+     * Get Locale Name
+     *
+     * This function is responsible for getting the locale name.
+     *
+     * @param $locale
+     * @return string
+     */
+    public function cutLocale($locale): string
+    {
+        $locale = explode('_', $locale);
+        return $locale[0];
+    }
+
+    /**
+     * Store Session Data
+     *
+     * This function is responsible for storing the session data.
+     *
+     * @param  Quote  $checkoutSession
+     * @param  CustomerSession  $customerSession
+     * @return void
+     */
+    public function storeSessionData(Quote $checkoutSession, CustomerSession $customerSession): void
+    {
+        $customerEmail = $checkoutSession->getBillingAddress()->getEmail();
+        $quoteId = $checkoutSession->getId();
+        $checkoutSession->setGuestQuoteId($quoteId);
+        $customerSession->setEmail($customerEmail);
+    }
+
+    /**
+     * Validate Signature
+     *
+     * This function is responsible for validating the signature.
+     *
+     * @param  CheckoutForm  $response
+     * @param  string  $secretKey
+     * @throws LocalizedException
+     */
+    public function validateSignature(CheckoutForm $response, string $secretKey): void
+    {
+        $responsePaymentStatus = $response->getPaymentStatus();
+        $responsePaymentId = $response->getPaymentId();
+        $responseCurrency = $response->getCurrency();
+        $responseBasketId = $response->getBasketId();
+        $responseConversationId = $response->getConversationId();
+        $responsePaidPrice = $response->getPaidPrice();
+        $responsePrice = $response->getPrice();
+        $responseToken = $response->getToken();
+        $responseSignature = $response->getSignature();
+
+        $calculateSignature = $this->calculateHmacSHA256Signature([
+            $responsePaymentStatus,
+            $responsePaymentId,
+            $responseCurrency,
+            $responseBasketId,
+            $responseConversationId,
+            $responsePaidPrice,
+            $responsePrice,
+            $responseToken
+        ], $secretKey);
+
+        if ($responseSignature !== $calculateSignature) {
+            throw new LocalizedException(__('Signature mismatch'));
+        }
+    }
+
+    /**
+     * Calculate HMAC SHA256 Signature
+     *
+     * This function is responsible for calculating the HMAC SHA256 signature.
+     *
+     * @param  array  $params
+     * @param  string  $secretKey
+     * @return string
+     */
+    public function calculateHmacSHA256Signature(array $params, string $secretKey): string
+    {
+        $dataToSign = implode(':', $params);
+        $mac = hash_hmac('sha256', $dataToSign, $secretKey, true);
+
+        return bin2hex($mac);
+    }
+
+    /**
+     * Validate Conversation ID
+     *
+     * This function is responsible for validating the conversation ID.
+     *
+     * @param  string  $conversationId
+     * @param  string  $responseConversationId
+     * @return bool
+     */
+    public function validateConversationId(string $conversationId, string $responseConversationId): bool
+    {
+        if ($conversationId !== $responseConversationId) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Find Order By State And Status
+     *
+     * This function is responsible for finding the order by state and status.
+     *
+     * @param  string|null  $responsePaymentStatus
+     * @param  string|null  $responseStatus
+     * @return array
+     */
+    public function findOrderByPaymentAndStatus(string|null $responsePaymentStatus, string|null $responseStatus): array
+    {
+        $ordersByPaymentAndStatus = [
+            'state' => '',
+            'status' => '',
+            'comment' => '',
+            'orderJobStatus' => ''
+        ];
+
+        $responsePaymentStatus = strtoupper($responsePaymentStatus ?? '');
+        $responseStatus = strtoupper($responseStatus ?? '');
+
+        if ($responsePaymentStatus == 'CREDIT_PAYMENT_INIT' && $responseStatus == 'INIT_CREDIT') {
+            $ordersByPaymentAndStatus['state'] = 'pending_payment';
+            $ordersByPaymentAndStatus['status'] = 'pending_payment';
+            $ordersByPaymentAndStatus['comment'] = __('PENDING_CREDIT');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'pending_payment';
+        }
+
+        if ($responsePaymentStatus == 'PENDING_CREDIT' && $responseStatus == 'SUCCESS') {
+            $ordersByPaymentAndStatus['state'] = 'pending_payment';
+            $ordersByPaymentAndStatus['status'] = 'pending_payment';
+            $ordersByPaymentAndStatus['comment'] = __('PENDING_CREDIT');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'pending_payment';
+        }
+
+        if ($responsePaymentStatus == 'CREDIT_PAYMENT_PENDING' && $responseStatus == 'PENDING_CREDIT') {
+            $ordersByPaymentAndStatus['state'] = 'pending_payment';
+            $ordersByPaymentAndStatus['status'] = 'pending_payment';
+            $ordersByPaymentAndStatus['comment'] = __('PENDING_CREDIT');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'pending_payment';
+        }
+
+        if ($responsePaymentStatus == 'CREDIT_PAYMENT_AUTH' && $responseStatus == 'SUCCESS') {
+            $ordersByPaymentAndStatus['state'] = 'processing';
+            $ordersByPaymentAndStatus['status'] = 'processing';
+            $ordersByPaymentAndStatus['comment'] = __('SUCCESS');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'pending_payment';
+        }
+
+        if ($responsePaymentStatus == 'CREDIT_PAYMENT_AUTH' && $responseStatus == 'FAILURE') {
+            $ordersByPaymentAndStatus['state'] = 'canceled';
+            $ordersByPaymentAndStatus['status'] = 'canceled';
+            $ordersByPaymentAndStatus['comment'] = __('FAILURE');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'canceled';
+        }
+
+        if ($responsePaymentStatus == 'INIT_BANK_TRANSFER' && $responseStatus == 'SUCCESS') {
+            $ordersByPaymentAndStatus['state'] = 'pending_payment';
+            $ordersByPaymentAndStatus['status'] = 'pending_payment';
+            $ordersByPaymentAndStatus['comment'] = __('INIT_BANK_TRANSFER');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'pending_payment';
+        }
+
+        if ($responsePaymentStatus == 'BANK_TRANSFER_AUTH' && $responseStatus == 'SUCCESS') {
+            $ordersByPaymentAndStatus['state'] = 'processing';
+            $ordersByPaymentAndStatus['status'] = 'processing';
+            $ordersByPaymentAndStatus['comment'] = __('SUCCESS');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'processing';
+        }
+
+        if ($responsePaymentStatus == 'INIT_THREEDS' && $responseStatus == 'SUCCESS') {
+            $ordersByPaymentAndStatus['state'] = 'pending_payment';
+            $ordersByPaymentAndStatus['status'] = 'pending_payment';
+            $ordersByPaymentAndStatus['comment'] = __('INIT_THREEDS_CRON');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'pending_payment';
+        }
+
+        if ($responsePaymentStatus == 'CHECKOUT_FORM_AUTH' && $responseStatus == 'SUCCESS') {
+            $ordersByPaymentAndStatus['state'] = 'processing';
+            $ordersByPaymentAndStatus['status'] = 'processing';
+            $ordersByPaymentAndStatus['comment'] = __('SUCCESS');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'processing';
+        }
+
+        if ($responsePaymentStatus == 'BALANCE' && $responseStatus == 'SUCCESS') {
+            $ordersByPaymentAndStatus['state'] = 'processing';
+            $ordersByPaymentAndStatus['status'] = 'processing';
+            $ordersByPaymentAndStatus['comment'] = __('SUCCESS');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'processing';
+        }
+
+        if ($responsePaymentStatus == 'SUCCESS' && $responseStatus == 'SUCCESS') {
+            $ordersByPaymentAndStatus['state'] = 'processing';
+            $ordersByPaymentAndStatus['status'] = 'processing';
+            $ordersByPaymentAndStatus['comment'] = __('SUCCESS');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'processing';
+        }
+        /* Missing For Card Failure*/
+        if ($responsePaymentStatus == 'FAILURE' && $responseStatus == 'SUCCESS') {
+            $ordersByPaymentAndStatus['state'] = 'canceled';
+            $ordersByPaymentAndStatus['status'] = 'canceled';
+            $ordersByPaymentAndStatus['comment'] = __('FAILURE');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'canceled';
+        }
+        /* Variable changed from $responsePaymentStatus to $responseStatus*/
+        if ($responseStatus == 'FAILURE') {
+            $ordersByPaymentAndStatus['state'] = 'canceled';
+            $ordersByPaymentAndStatus['status'] = 'canceled';
+            $ordersByPaymentAndStatus['comment'] = __('FAILURE');
+            $ordersByPaymentAndStatus['orderJobStatus'] = 'canceled';
+        }
+
+        return $ordersByPaymentAndStatus;
+    }
+
+    /**
+     * Calculate Subtotal Price
+     *
+     * @param  $order
+     * @return string
+     */
+    public function calculateSubTotalPrice($order): string
+    {
+        $price = 0;
+        foreach ($order->getAllVisibleItems() as $item) {
+            $itemPrice = $item->getPrice();
+            if ($itemPrice == 0) {
+                $itemPrice = 0.01;
+            }
+
+            $price += round($itemPrice, 2);
+        }
+
+        $price += $order->getShippingAddress()->getShippingAmount() ?? 0;
+        return $this->parsePrice($price);
+    }
+
+    /**
+     * Validate Payment Session
+     *
+     * Validates payment session and ensures proper cookie handling.
+     *
+     * @param string $sessionId
+     * @return bool
+     */
+    public function validatePaymentSession(string $sessionId): bool
+    {
+        if (empty($sessionId)) {
+            return false;
+        }
+
+        // Check if session cookie exists and is valid
+        if (!isset($_COOKIE['PHPSESSID']) || $_COOKIE['PHPSESSID'] !== $sessionId) {
+            return false;
+        }
+
+        // Ensure payment cookies are properly set
+        $this->ensureCookiesSameSite();
+
+        return true;
+    }
+
+    /**
+     * Set Payment Security Headers
+     *
+     * Sets additional security headers for payment pages.
+     *
+     * @return void
+     */
+    public function setPaymentSecurityHeaders(): void
+    {
+        if (!headers_sent()) {
+            header("Strict-Transport-Security: max-age=31536000; includeSubDomains");
+            header("Referrer-Policy: strict-origin-when-cross-origin");
+            header("Permissions-Policy: payment=(self)");
+        }
+    }
+
+    /**
+     * Clean Payment Cookies
+     *
+     * Cleans up payment-related cookies after transaction completion.
+     *
+     * @return void
+     */
+    public function cleanPaymentCookies(): void
+    {
+        $paymentCookies = [
+            'iyzico_payment_token',
+            'iyzico_session_id',
+            'iyzico_checkout_form'
+        ];
+
+        foreach ($paymentCookies as $cookieName) {
+            if (isset($_COOKIE[$cookieName])) {
+                setcookie($cookieName, '', time() - 3600, '/');
+                unset($_COOKIE[$cookieName]);
+            }
+        }
+    }
+}

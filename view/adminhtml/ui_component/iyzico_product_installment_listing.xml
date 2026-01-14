@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">iyzico_product_installment_listing.iyzico_product_installment_listing_data_source</item>
+        </item>
+    </argument>
+    <settings>
+        <buttons>
+            <button name="add">
+                <url path="*/*/new"/>
+                <class>primary</class>
+                <label translate="true">Yeni Ürün SKU Taksitlendirme Ekle</label>
+            </button>
+        </buttons>
+        <spinner>iyzico_product_installment_columns</spinner>
+        <deps>
+            <dep>iyzico_product_installment_listing.iyzico_product_installment_listing_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="iyzico_product_installment_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <storageConfig>
+                <param name="indexField" xsi:type="string">installment_id</param>
+            </storageConfig>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>Iyzico_Iyzipay::product_installment_settings</aclResource>
+        <dataProvider class="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider" name="iyzico_product_installment_listing_data_source">
+            <settings>
+                <requestFieldName>id</requestFieldName>
+                <primaryFieldName>installment_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_top">
+        <settings>
+            <sticky>true</sticky>
+        </settings>
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <filters name="listing_filters"/>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+    <columns name="iyzico_product_installment_columns">
+        <column name="installment_id">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">ID</label>
+                <sorting>asc</sorting>
+            </settings>
+        </column>
+        <column name="product_sku">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Ürün SKU</label>
+            </settings>
+        </column>
+        <column name="settings" class="Iyzico\Iyzipay\Ui\Component\Listing\Column\InstallmentSettings">
+            <settings>
+                <filter>false</filter>
+                <label translate="true">Taksit Ayarları</label>
+            </settings>
+        </column>
+        <actionsColumn name="actions" class="Iyzico\Iyzipay\Ui\Component\Listing\Column\ProductInstallmentActions">
+            <settings>
+                <indexField>installment_id</indexField>
+                <resizeEnabled>false</resizeEnabled>
+                <resizeDefaultWidth>107</resizeDefaultWidth>
+            </settings>
+        </actionsColumn>
+    </columns>
+</listing>
