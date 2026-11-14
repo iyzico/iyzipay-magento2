@@ -52,7 +52,7 @@ class Subtotal extends \Magento\Sales\Model\Order\Total\AbstractTotal
 
         }
 
-        if ((double)$creditmemo->getOrder()->getInstallmentFee() != 0) {
+        if ((float)$creditmemo->getOrder()->getInstallmentFee() != 0) {
             $subtotal+= $creditmemo->getOrder()->getInstallmentFee();
             $baseSubtotal+= $creditmemo->getOrder()->getInstallmentFee();
         }
